@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Online Grocery Store - Index</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+
+<style>
+/* ================================================================
+   0. TOKENS
+   ================================================================ */
+:root{
+  --green:#2E7D32;
+  --green-d:#1B5E20;
+  --green-l:#43A047;
+  --green-soft:#66BB6A;
+  --orange:#FF9800;
+  --orange-d:#FB8C00;
+  --orange-l:#FFB74D;
+  --red:#E53935;
+  --yellow:#FFC107;
+
+  --mint:#F1F8E9;
+  --mint-2:#E8F5E9;
+  --cream:#FFFCF4;
+  --bg:#F7FBF2;
+
+  --text:#1B3A1F;
+  --text-soft:#51624F;
+  --text-mute:#95A894;
+  --white:#ffffff;
+  --line:#E3F0E2;
+
+  --sh1:0 2px 10px rgba(27,58,31,.05);
+  --sh2:0 14px 34px rgba(27,58,31,.09);
+  --sh3:0 28px 62px rgba(27,58,31,.17);
+
+  --r-s:14px;
+  --r-m:22px;
+  --r-l:30px;
+  --r-xl:42px;
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+
+  --wrap:1240px;
+}
+
+/* ================================================================
+   1. BASE  —  horizontal-overflow safe
+   ================================================================ */
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html{
+  scroll-behavior:smooth;
+  -webkit-text-size-adjust:100%;
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;          /* root clip: keeps the viewport from panning sideways */
+}
+
+body{
+  font-family:'Inter','Segoe UI',Roboto,system-ui,sans-serif;
+  font-size:15px;line-height:1.65;color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;display:flex;flex-direction:column;
+  position:relative;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+/* modern, safe clipping that does NOT create a scroll container
+   (so position:sticky inside the page keeps working) */
+@supports (overflow-x: clip){
+  body{overflow-x:clip;}
+}
+
+h1,h2,h3,h4,h5{
+  font-family:'Outfit','Inter',sans-serif;
+  font-weight:800;line-height:1.08;letter-spacing:-.025em;color:var(--text);
+}
+
+img{display:block;max-width:100%;}
+a{text-decoration:none;color:inherit;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+#header-placeholder,
+#footer-placeholder{
+  flex-shrink:0;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:clip;
+}
+
+main{
+  flex:1;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  overflow-x:clip;            /* contains any accidental wide child */
+}
+
+.wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 22px;}
+
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:var(--mint-2);}
+::-webkit-scrollbar-thumb{background:var(--green);border-radius:20px;border:2px solid var(--mint-2);}
+::-webkit-scrollbar-thumb:hover{background:var(--orange);}
+::selection{background:var(--orange);color:#fff;}
+
+/* ================================================================
+   2. PRELOADER — Stackly logo orbital loader
+   ================================================================ */
+#preloader{
+  position:fixed;inset:0;z-index:99999;
+  background:linear-gradient(135deg,#F7FBF2 0%,#FFFCF4 45%,#F1F8E9 100%);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity .8s ease,visibility .8s ease;
+  overflow:hidden;
+}
+#preloader.hide{
+  opacity:0;visibility:hidden;
+  pointer-events:none;
+}
+#preloader.hide .pre-logo-wrap{transform:scale(1.15);}
+
+.pre-blob{
+  position:absolute;border-radius:50%;filter:blur(80px);
+  pointer-events:none;
+}
+.pre-b1{
+  width:480px;height:480px;top:-160px;left:-140px;
+  background:radial-gradient(circle,rgba(255,152,0,.28),transparent 70%);
+  animation:preDrift 8s ease-in-out infinite;
+}
+.pre-b2{
+  width:520px;height:520px;bottom:-180px;right:-160px;
+  background:radial-gradient(circle,rgba(46,125,50,.24),transparent 70%);
+  animation:preDrift 10s ease-in-out infinite reverse;
+}
+.pre-b3{
+  width:280px;height:280px;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,193,7,.14),transparent 70%);
+  animation:prePulse 3s ease-in-out infinite;
+}
+@keyframes preDrift{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(40px,-30px) scale(1.1);}
+}
+@keyframes prePulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.7;}
+  50%{transform:translate(-50%,-50%) scale(1.3);opacity:.4;}
+}
+
+.pre-inner{
+  position:relative;z-index:3;
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:24px;
+}
+
+.pre-logo-wrap{
+  position:relative;
+  width:170px;height:170px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:26px;
+  transition:transform .8s var(--ease);
+}
+
+.pre-ring{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform:rotate(-90deg);
+  overflow:visible;
+}
+.pre-track{
+  fill:none;
+  stroke:rgba(46,125,50,.13);
+  stroke-width:5;
+}
+.pre-progress{
+  fill:none;
+  stroke:url(#preGradA);
+  stroke-width:5;
+  stroke-linecap:round;
+  stroke-dasharray:439.82;
+  stroke-dashoffset:439.82;
+  transition:stroke-dashoffset .18s linear;
+  filter:drop-shadow(0 0 8px rgba(255,152,0,.4));
+}
+
+.pre-glow{
+  position:absolute;
+  inset:14px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,.4) 60%,transparent 72%);
+  box-shadow:
+    inset 0 0 30px rgba(46,125,50,.12),
+    0 14px 36px rgba(46,125,50,.12);
+  z-index:-1;
+}
+.pre-glow::after{
+  content:'';
+  position:absolute;inset:-4px;border-radius:50%;
+  border:1.5px dashed rgba(46,125,50,.2);
+  animation:preSpinSlow 22s linear infinite;
+}
+@keyframes preSpinSlow{to{transform:rotate(360deg);}}
+
+.pre-logo{
+  width:96px;height:96px;
+  object-fit:contain;
+  position:relative;z-index:2;
+  animation:preLogoBeat 2.4s ease-in-out infinite;
+  filter:drop-shadow(0 8px 18px rgba(46,125,50,.22));
+}
+@keyframes preLogoBeat{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.06);}
+}
+
+.pre-brand{
+  font-family:'Outfit',sans-serif;
+  font-size:2rem;font-weight:900;letter-spacing:-.05em;
+  color:var(--text);margin-bottom:6px;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.pre-brand .dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--orange);
+  animation:preDotBlink 1.2s ease-in-out infinite;
+}
+@keyframes preDotBlink{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:.4;transform:scale(.7);}
+}
+.pre-tag{
+  font-size:.74rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text-mute);margin-bottom:24px;
+}
+
+.pre-percent{
+  font-family:'Outfit',sans-serif;
+  font-size:.9rem;font-weight:800;
+  color:var(--green-d);
+  letter-spacing:.6px;
+  padding:8px 18px;
+  background:#fff;
+  border:1.5px solid var(--line);
+  border-radius:100px;
+  box-shadow:var(--sh1);
+  display:inline-flex;align-items:center;gap:9px;
+  min-width:96px;
+  justify-content:center;
+}
+.pre-percent::before{
+  content:'';
+  width:8px;height:8px;border-radius:50%;
+  background:var(--green-l);
+  box-shadow:0 0 0 0 rgba(67,160,71,.6);
+  animation:ping 1.6s infinite;
+}
+@keyframes ping{
+  0%{box-shadow:0 0 0 0 rgba(67,160,71,.55);}
+  70%{box-shadow:0 0 0 10px rgba(67,160,71,0);}
+  100%{box-shadow:0 0 0 0 rgba(67,160,71,0);}
+}
+
+/* ================================================================
+   3. UTILITIES
+   ================================================================ */
+.sec{padding:76px 0;position:relative;overflow-x:clip;}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.68rem;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;
+  color:var(--orange-d);
+  background:rgba(255,152,0,.11);
+  border:1px solid rgba(255,152,0,.16);
+  padding:7px 15px;border-radius:100px;
+  margin-bottom:16px;
+}
+.eyebrow.green{color:var(--green);background:rgba(46,125,50,.09);border-color:rgba(46,125,50,.15);}
+
+.head{max-width:660px;margin-bottom:44px;}
+.head.center{margin-left:auto;margin-right:auto;text-align:center;}
+.head h2{font-size:clamp(1.75rem,3.6vw,2.6rem);margin-bottom:14px;}
+.head h2 em{font-style:normal;color:var(--green);position:relative;}
+.head h2 em::after{
+  content:'';position:absolute;left:0;right:0;bottom:2px;height:9px;
+  background:rgba(255,152,0,.25);border-radius:6px;z-index:-1;
+}
+.head p{font-size:.96rem;color:var(--text-soft);line-height:1.75;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:13px 26px;border-radius:100px;
+  font-size:.85rem;font-weight:700;letter-spacing:.1px;line-height:1;
+  border:1.6px solid transparent;cursor:pointer;
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease),background .3s ease,color .3s ease,border-color .3s ease;
+  white-space:nowrap;
+}
+.btn i{font-size:.85em;}
+.btn-orange{background:var(--orange);color:#fff;box-shadow:0 10px 24px rgba(255,152,0,.34);}
+.btn-orange:hover{background:var(--orange-d);transform:translateY(-3px);box-shadow:0 16px 34px rgba(255,152,0,.44);}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 10px 24px rgba(46,125,50,.28);}
+.btn-green:hover{background:var(--green-d);transform:translateY(-3px);box-shadow:0 16px 34px rgba(46,125,50,.38);}
+.btn-ghost{border-color:var(--line);background:#fff;color:var(--text);box-shadow:var(--sh1);}
+.btn-ghost:hover{border-color:var(--green);color:var(--green);transform:translateY(-3px);box-shadow:var(--sh2);}
+.btn-sm{padding:10px 18px;font-size:.76rem;}
+.btn-lg{padding:16px 32px;font-size:.92rem;}
+
+.icon-btn{
+  width:46px;height:46px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;color:var(--green);
+  border:1.5px solid var(--line);
+  transition:all .35s var(--ease);
+  flex-shrink:0;font-size:.9rem;
+}
+.icon-btn:hover{background:var(--green);color:#fff;border-color:var(--green);transform:translateY(-3px) scale(1.05);box-shadow:var(--sh2);}
+.icon-btn.orange:hover{background:var(--orange);border-color:var(--orange);box-shadow:0 12px 26px rgba(255,152,0,.34);}
+
+/* ================================================================
+   4. SCROLL PROGRESS
+   ================================================================ */
+#scrollProgress{
+  position:fixed;top:0;left:0;height:3px;width:0%;
+  background:linear-gradient(90deg,var(--green),var(--green-l),var(--orange));
+  z-index:9999;transition:width .1s linear;
+  box-shadow:0 0 12px rgba(255,152,0,.55);
+}
+
+/* ================================================================
+   5. TICKER — DARK BACKGROUND (only dark section)
+   ================================================================ */
+.ticker{
+  background:linear-gradient(90deg,#1B5E20 0%,#2E7D32 50%,#1B5E20 100%);
+  color:#E8F5E9;
+  overflow:hidden;
+  max-width:100%;
+  padding:13px 0;
+  position:relative;
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.ticker::before,.ticker::after{
+  content:'';position:absolute;top:0;bottom:0;width:110px;z-index:2;pointer-events:none;
+}
+.ticker::before{left:0;background:linear-gradient(90deg,#1B5E20,transparent);}
+.ticker::after{right:0;background:linear-gradient(270deg,#1B5E20,transparent);}
+.ticker-track{display:flex;width:max-content;animation:tickMove 34s linear infinite;}
+.ticker:hover .ticker-track{animation-play-state:paused;}
+.ticker-set{display:flex;align-items:center;gap:38px;padding-right:38px;}
+.ticker-item{
+  display:inline-flex;align-items:center;gap:11px;
+  font-size:.74rem;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+  white-space:nowrap;color:#DCEDC8;
+}
+.ticker-item i{color:var(--orange-l);font-size:.82rem;}
+@keyframes tickMove{to{transform:translateX(-50%);}}
+
+/* ================================================================
+   6. HERO
+   ================================================================ */
+.hero{position:relative;padding:52px 0 26px;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);pointer-events:none;z-index:0;opacity:.6;}
+.blob.b1{
+  width:440px;height:440px;top:-160px;left:-150px;
+  background:radial-gradient(circle at 35% 35%,rgba(255,152,0,.38),transparent 70%);
+  animation:drift 15s ease-in-out infinite;
+}
+.blob.b2{
+  width:520px;height:520px;bottom:-230px;right:-180px;
+  background:radial-gradient(circle at 60% 40%,rgba(46,125,50,.28),transparent 70%);
+  animation:drift 19s ease-in-out infinite reverse;
+}
+.blob.b3{
+  width:300px;height:300px;top:40%;left:42%;
+  background:radial-gradient(circle,rgba(255,193,7,.16),transparent 70%);
+  animation:drift 22s ease-in-out infinite;
+}
+@keyframes drift{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(46px,-34px) scale(1.1);}
+}
+
+.hero-grid{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1.06fr .94fr;
+  gap:56px;align-items:center;
+}
+
+.hero-copy{min-width:0;}
+
+.hero-copy .chip{
+  display:inline-flex;align-items:center;gap:9px;
+  background:#fff;border:1.5px solid var(--line);
+  color:var(--green-d);
+  font-size:.72rem;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;
+  padding:8px 16px;border-radius:100px;
+  box-shadow:var(--sh1);margin-bottom:22px;
+}
+.hero-copy .chip i{color:var(--orange);}
+.hero-copy .chip .dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green-l);
+  box-shadow:0 0 0 0 rgba(67,160,71,.6);
+  animation:ping 2s infinite;
+}
+
+.hero-title{
+  font-size:clamp(2.3rem,5.2vw,4rem);
+  font-weight:900;letter-spacing:-.035em;line-height:1.02;margin-bottom:22px;
+}
+.hero-title .hl{position:relative;display:inline-block;color:var(--green-d);}
+.hero-title .hl::after{
+  content:'';position:absolute;left:0;bottom:6px;height:14px;width:100%;
+  background:linear-gradient(90deg,rgba(255,152,0,.42),rgba(255,183,77,.28));
+  border-radius:8px;z-index:-1;
+  transform:scaleX(0);transform-origin:left;
+  animation:swipe 1s var(--ease) 1.4s forwards;
+}
+@keyframes swipe{to{transform:scaleX(1);}}
+.hero-title .ol{color:var(--orange);}
+
+.hero-sub{
+  font-size:1.03rem;color:var(--text-soft);line-height:1.75;
+  max-width:520px;margin-bottom:32px;
+}
+
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:34px;}
+
+.hero-proof{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-top:26px;border-top:1px dashed var(--line);
+}
+.avatars{display:flex;}
+.avatars span{
+  width:40px;height:40px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:800;color:#fff;
+  border:3px solid var(--bg);margin-left:-12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.10);
+}
+.avatars span:first-child{margin-left:0;}
+.avatars span:nth-child(1){background:linear-gradient(135deg,var(--green),var(--green-l));}
+.avatars span:nth-child(2){background:linear-gradient(135deg,var(--orange),var(--orange-d));}
+.avatars span:nth-child(3){background:linear-gradient(135deg,#00897B,#26A69A);}
+.avatars span:nth-child(4){background:linear-gradient(135deg,#5E35B1,#7E57C2);}
+.proof-text strong{display:block;font-size:.86rem;font-weight:800;color:var(--text);}
+.proof-text .stars{color:var(--orange);font-size:.78rem;letter-spacing:1.5px;}
+.proof-text small{font-size:.75rem;color:var(--text-mute);font-weight:600;}
+
+.hero-stage{position:relative;aspect-ratio:1/1;max-width:540px;width:100%;margin-left:auto;}
+.stage-main{
+  position:absolute;inset:7% 9% 7% 9%;
+  border-radius:var(--r-xl);overflow:hidden;
+  border:7px solid #fff;box-shadow:var(--sh3);
+  background:linear-gradient(135deg,rgba(46,125,50,.12),rgba(255,152,0,.14));
+  animation:stageFloat 7s ease-in-out infinite;
+}
+@keyframes stageFloat{
+  0%,100%{transform:translateY(0) rotate(-1.4deg);}
+  50%{transform:translateY(-14px) rotate(1.4deg);}
+}
+.stage-main img{width:100%;height:100%;object-fit:cover;}
+.stage-main .ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:6rem;color:var(--green);}
+.stage-main.no-img img{display:none;}
+.stage-main.no-img .ph{display:flex;}
+
+.fcard{
+  position:absolute;z-index:4;
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:18px;padding:12px 15px;
+  display:flex;align-items:center;gap:11px;
+  box-shadow:0 16px 36px rgba(27,58,31,.14);
+  font-size:.76rem;font-weight:800;color:var(--text);
+}
+.fcard i{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;}
+.fcard small{display:block;font-size:.66rem;font-weight:600;color:var(--text-mute);letter-spacing:.2px;}
+.fc1{top:4%;left:-2%;animation:floaty 5s ease-in-out infinite;}
+.fc1 i{background:rgba(255,152,0,.14);color:var(--orange-d);}
+.fc2{bottom:16%;right:-3%;animation:floaty 6s ease-in-out infinite .6s;}
+.fc2 i{background:rgba(46,125,50,.12);color:var(--green);}
+.fc3{bottom:-1%;left:6%;animation:floaty 5.6s ease-in-out infinite 1.1s;}
+.fc3 i{background:rgba(255,193,7,.18);color:#E6A700;}
+@keyframes floaty{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-13px);}
+}
+
+.ring{position:absolute;top:-2%;right:4%;width:120px;height:120px;z-index:5;animation:spin 22s linear infinite;}
+.ring svg{width:100%;height:100%;}
+.ring text{font-family:'Outfit',sans-serif;font-size:9.6px;font-weight:800;letter-spacing:2.6px;fill:var(--green-d);text-transform:uppercase;}
+.ring-center{
+  position:absolute;inset:0;margin:auto;
+  width:46px;height:46px;border-radius:50%;
+  background:var(--orange);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  box-shadow:0 8px 22px rgba(255,152,0,.45);
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ================================================================
+   7. STAT BAR
+   ================================================================ */
+.statbar{
+  position:relative;z-index:3;margin-top:56px;
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:var(--r-l);padding:30px 22px;
+  box-shadow:var(--sh2);
+  display:grid;grid-template-columns:repeat(4,1fr);
+}
+.stat{text-align:center;padding:6px 14px;border-right:1px dashed var(--line);min-width:0;}
+.stat:last-child{border-right:none;}
+.stat strong{
+  display:block;font-family:'Outfit',sans-serif;
+  font-size:clamp(1.6rem,3vw,2.2rem);
+  font-weight:900;color:var(--green);
+  letter-spacing:-.04em;line-height:1;margin-bottom:8px;
+}
+.stat span{font-size:.72rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--text-mute);}
+
+/* ================================================================
+   8. BENTO CATEGORIES
+   ================================================================ */
+.bento{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:186px;gap:16px;
+}
+.tile{
+  position:relative;border-radius:var(--r-l);overflow:hidden;
+  background:#e9f3e6;box-shadow:var(--sh1);
+  isolation:isolate;
+  transition:transform .5s var(--ease),box-shadow .5s var(--ease);
+}
+.tile:hover{transform:translateY(-6px);box-shadow:var(--sh3);}
+.tile img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  transition:transform 1s var(--ease);z-index:-2;
+}
+.tile:hover img{transform:scale(1.09);}
+.tile::after{
+  content:'';position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(180deg,rgba(12,32,14,0) 30%,rgba(12,32,14,.72) 100%);
+  transition:background .45s ease;
+}
+.tile:hover::after{background:linear-gradient(180deg,rgba(27,94,32,.14) 0%,rgba(12,32,14,.82) 100%);}
+.tile.no-img{background:linear-gradient(135deg,rgba(46,125,50,.22),rgba(255,152,0,.22));}
+.tile.no-img img{display:none;}
+.tile-body{position:absolute;left:0;right:0;bottom:0;padding:20px 22px;color:#fff;z-index:2;}
+.tile-body h3{color:#fff;font-size:1.06rem;font-weight:800;letter-spacing:-.02em;margin-bottom:3px;}
+.tile-body span{font-size:.72rem;font-weight:600;color:rgba(255,255,255,.82);letter-spacing:.4px;}
+
+.tile-go{
+  position:absolute;top:16px;right:16px;z-index:3;
+  width:42px;height:42px;border-radius:50%;
+  background:rgba(255,255,255,.94);color:var(--green-d);
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+  opacity:0;transform:translateY(-8px) scale(.8);
+  transition:all .4s var(--ease-bounce);
+  box-shadow:0 6px 16px rgba(0,0,0,.14);
+}
+.tile:hover .tile-go{opacity:1;transform:translateY(0) scale(1);}
+.tile-go:hover{background:var(--orange);color:#fff;transform:scale(1.1);}
+
+.tile.big{grid-column:span 2;grid-row:span 2;}
+.tile.wide{grid-column:span 2;}
+.tile.big .tile-body{padding:28px 30px;}
+.tile.big .tile-body h3{font-size:1.6rem;}
+.tile.big .tile-body span{font-size:.8rem;}
+.tile-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--orange);color:#fff;
+  font-size:.6rem;font-weight:900;letter-spacing:1.2px;text-transform:uppercase;
+  padding:5px 11px;border-radius:100px;margin-bottom:12px;
+}
+
+/* ================================================================
+   9. PRODUCT RAIL
+   ================================================================ */
+.rail-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:34px;}
+.rail-nav{display:flex;gap:10px;}
+
+.rail{
+  display:flex;gap:18px;overflow-x:auto;
+  scroll-snap-type:x mandatory;
+  overscroll-behavior-x:contain;     /* stops sideways swipe from dragging the page */
+  max-width:100%;
+  padding:6px 4px 24px;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.rail::-webkit-scrollbar{display:none;}
+
+.pcard{
+  flex:0 0 262px;scroll-snap-align:start;
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:var(--r-m);overflow:hidden;
+  display:flex;flex-direction:column;
+  transition:transform .45s var(--ease),box-shadow .45s var(--ease),border-color .35s ease;
+  position:relative;
+}
+.pcard:hover{transform:translateY(-8px);box-shadow:var(--sh3);border-color:rgba(255,152,0,.42);}
+.pmedia{position:relative;aspect-ratio:1/1;overflow:hidden;background:linear-gradient(135deg,rgba(46,125,50,.09),rgba(255,152,0,.09));}
+.pmedia img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease);}
+.pcard:hover .pmedia img{transform:scale(1.08);}
+.pmedia .ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:3.2rem;color:var(--green);}
+.pmedia.no-img img{display:none;}
+.pmedia.no-img .ph{display:flex;}
+
+.ptag{
+  position:absolute;top:12px;left:12px;z-index:2;
+  font-size:.6rem;font-weight:900;letter-spacing:.9px;text-transform:uppercase;
+  padding:5px 11px;border-radius:100px;color:#fff;
+  background:var(--orange);box-shadow:0 6px 16px rgba(255,152,0,.34);
+}
+.ptag.green{background:var(--green);box-shadow:0 6px 16px rgba(46,125,50,.34);}
+.ptag.red{background:var(--red);box-shadow:0 6px 16px rgba(229,57,53,.34);}
+
+.pfav{
+  position:absolute;top:12px;right:12px;z-index:2;
+  width:34px;height:34px;border-radius:50%;
+  background:rgba(255,255,255,.92);color:var(--text-mute);
+  display:flex;align-items:center;justify-content:center;font-size:.78rem;
+  opacity:0;transform:translateX(8px);
+  transition:all .35s var(--ease);
+}
+.pcard:hover .pfav{opacity:1;transform:translateX(0);}
+.pfav:hover{background:var(--red);color:#fff;}
+
+.pbody{padding:16px 17px 18px;display:flex;flex-direction:column;flex:1;}
+.pcat{font-size:.63rem;font-weight:900;letter-spacing:1.1px;text-transform:uppercase;color:var(--orange-d);margin-bottom:5px;}
+.pname{font-size:.92rem;font-weight:800;letter-spacing:-.015em;line-height:1.3;margin-bottom:4px;}
+.pweight{font-size:.72rem;color:var(--text-mute);font-weight:600;margin-bottom:10px;}
+.pstars{display:flex;align-items:center;gap:6px;font-size:.7rem;margin-bottom:14px;}
+.pstars .s{color:var(--orange);letter-spacing:1.2px;}
+.pstars .c{color:var(--text-mute);font-weight:600;}
+
+.pfoot{
+  margin-top:auto;padding-top:13px;border-top:1px dashed var(--line);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.pprice{font-family:'Outfit',sans-serif;font-size:1.18rem;font-weight:900;color:var(--green);letter-spacing:-.03em;line-height:1;}
+.pold{font-size:.72rem;color:var(--text-mute);text-decoration:line-through;font-weight:700;margin-top:2px;}
+
+/* ================================================================
+   10. TIMELINE
+   ================================================================ */
+.timeline{position:relative;max-width:900px;margin:0 auto;padding:10px 0;}
+.tl-line{
+  position:absolute;top:0;bottom:0;left:50%;width:3px;
+  transform:translateX(-50%);
+  background:var(--mint-2);border-radius:20px;overflow:hidden;
+}
+.tl-fill{
+  display:block;width:100%;height:0%;
+  background:linear-gradient(180deg,var(--green),var(--green-l),var(--orange));
+  border-radius:20px;transition:height .25s linear;
+  box-shadow:0 0 16px rgba(255,152,0,.4);
+}
+.tl-item{position:relative;width:50%;padding:0 46px 52px 0;box-sizing:border-box;}
+.tl-item:nth-child(even){margin-left:50%;padding:0 0 52px 46px;}
+.tl-item:last-child{padding-bottom:0;}
+
+.tl-node{
+  position:absolute;top:8px;
+  width:54px;height:54px;border-radius:50%;
+  background:#fff;border:3px solid var(--mint-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.05rem;color:var(--green);z-index:3;
+  transition:all .45s var(--ease-bounce);
+  box-shadow:var(--sh1);
+}
+.tl-item:nth-child(odd) .tl-node{right:-27px;}
+.tl-item:nth-child(even) .tl-node{left:-27px;}
+.tl-item:hover .tl-node{
+  background:var(--orange);border-color:rgba(255,152,0,.28);color:#fff;
+  transform:scale(1.1) rotate(-8deg);
+  box-shadow:0 14px 30px rgba(255,152,0,.4);
+}
+
+.tl-card{
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:var(--r-m);padding:26px 28px;
+  box-shadow:var(--sh1);transition:all .45s var(--ease);position:relative;
+}
+.tl-card:hover{transform:translateY(-5px);box-shadow:var(--sh3);border-color:rgba(46,125,50,.3);}
+.tl-step{font-family:'Outfit',sans-serif;font-size:.66rem;font-weight:900;letter-spacing:1.6px;text-transform:uppercase;color:var(--orange-d);margin-bottom:8px;}
+.tl-card h3{font-size:1.12rem;margin-bottom:8px;}
+.tl-card p{font-size:.86rem;color:var(--text-soft);line-height:1.7;}
+
+/* ================================================================
+   11. DEAL OF THE DAY
+   ================================================================ */
+.deal{
+  border-radius:var(--r-xl);overflow:hidden;
+  background:linear-gradient(135deg,#FFFDF6 0%,#FFF3DE 100%);
+  border:1.5px solid var(--line);
+  display:grid;grid-template-columns:1fr 1.05fr;
+  position:relative;box-shadow:var(--sh2);
+}
+.deal::before{
+  content:'';position:absolute;top:-120px;right:-120px;
+  width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,152,0,.16),transparent 70%);pointer-events:none;
+}
+.deal::after{
+  content:'';position:absolute;bottom:-140px;left:-80px;
+  width:380px;height:380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,125,50,.09),transparent 70%);pointer-events:none;
+}
+.deal-media{position:relative;min-height:440px;overflow:hidden;}
+.deal-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scale(1.02);transition:transform 1.2s var(--ease);}
+.deal:hover .deal-media img{transform:scale(1.09);}
+.deal-media.no-img img{display:none;}
+.deal-media .dm-ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:5rem;color:rgba(255,152,0,.55);}
+.deal-media.no-img .dm-ph{display:flex;}
+
+.deal-stamp{
+  position:absolute;top:34px;left:34px;z-index:3;
+  width:108px;height:108px;border-radius:50%;
+  background:var(--orange);color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 18px 40px rgba(255,152,0,.5);
+  animation:pulseStamp 2.8s ease-in-out infinite;
+}
+.deal-stamp strong{font-family:'Outfit',sans-serif;font-size:1.75rem;font-weight:900;letter-spacing:-.05em;line-height:1;}
+.deal-stamp span{font-size:.58rem;font-weight:900;letter-spacing:1.8px;margin-top:3px;}
+@keyframes pulseStamp{
+  0%,100%{transform:scale(1) rotate(-6deg);}
+  50%{transform:scale(1.07) rotate(2deg);}
+}
+
+.deal-body{position:relative;z-index:3;padding:56px 52px;display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.deal-body .eyebrow{align-self:flex-start;}
+.deal-body h2{color:var(--text);font-size:clamp(1.6rem,3.1vw,2.35rem);margin-bottom:14px;}
+.deal-body h2 em{font-style:normal;color:var(--green);}
+.deal-body > p{color:var(--text-soft);font-size:.94rem;line-height:1.75;max-width:460px;margin-bottom:28px;}
+
+.countdown{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px;}
+.cd-box{
+  min-width:74px;background:#fff;border:1.5px solid var(--line);
+  border-radius:16px;padding:14px 12px;text-align:center;
+  transition:all .35s var(--ease);box-shadow:var(--sh1);
+}
+.cd-box:hover{transform:translateY(-4px);box-shadow:var(--sh2);border-color:rgba(255,152,0,.4);}
+.cd-num{font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:900;color:var(--green);letter-spacing:-.04em;line-height:1;margin-bottom:5px;}
+.cd-label{font-size:.58rem;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-mute);}
+
+.deal-progress{margin-bottom:30px;max-width:440px;}
+.deal-progress .bar-top{display:flex;justify-content:space-between;font-size:.72rem;font-weight:800;color:var(--text-soft);margin-bottom:9px;}
+.deal-progress .bar-top b{color:var(--orange-d);}
+.deal-bar{height:8px;border-radius:100px;background:var(--mint-2);overflow:hidden;}
+.deal-bar i{
+  display:block;height:100%;width:0%;
+  background:linear-gradient(90deg,var(--green-l),var(--orange));
+  border-radius:100px;transition:width 1.6s var(--ease);
+  box-shadow:0 0 14px rgba(255,152,0,.4);
+}
+.deal-actions{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* ================================================================
+   12. WHY / ACCORDION
+   ================================================================ */
+.why-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:60px;align-items:start;}
+.why-sticky{position:sticky;top:110px;}
+.why-sticky h2{font-size:clamp(1.7rem,3.4vw,2.5rem);margin-bottom:16px;}
+.why-sticky h2 em{font-style:normal;color:var(--green);}
+.why-sticky p{font-size:.95rem;color:var(--text-soft);line-height:1.75;margin-bottom:26px;}
+
+.why-mini{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:28px;}
+.why-mini div{
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:14px;padding:11px 15px;
+  font-size:.75rem;font-weight:800;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+  box-shadow:var(--sh1);transition:all .3s var(--ease);
+}
+.why-mini div:hover{border-color:var(--orange);transform:translateY(-3px);}
+.why-mini i{color:var(--green);}
+
+.accordion{display:flex;flex-direction:column;gap:14px;min-width:0;}
+.acc-item{
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:var(--r-m);overflow:hidden;
+  transition:border-color .35s ease,box-shadow .35s ease;
+}
+.acc-item:hover{border-color:rgba(46,125,50,.28);}
+.acc-item.open{border-color:rgba(255,152,0,.45);box-shadow:0 18px 40px rgba(255,152,0,.12);}
+.acc-head{
+  width:100%;display:flex;align-items:center;gap:16px;
+  padding:20px 22px;text-align:left;
+  transition:background .3s ease;
+}
+.acc-item.open .acc-head{background:linear-gradient(90deg,rgba(255,152,0,.06),transparent);}
+.acc-ico{
+  width:44px;height:44px;border-radius:13px;flex-shrink:0;
+  background:rgba(46,125,50,.09);color:var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  transition:all .4s var(--ease-bounce);
+}
+.acc-item.open .acc-ico{background:var(--orange);color:#fff;transform:rotate(-8deg);box-shadow:0 10px 22px rgba(255,152,0,.35);}
+.acc-title{flex:1;min-width:0;font-family:'Outfit',sans-serif;font-size:1rem;font-weight:800;color:var(--text);letter-spacing:-.015em;}
+.acc-plus{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:var(--mint);color:var(--green);
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;
+  transition:all .4s var(--ease-bounce);
+}
+.acc-item.open .acc-plus{background:var(--green);color:#fff;transform:rotate(135deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .5s var(--ease);}
+.acc-body p{padding:0 22px 22px 82px;font-size:.86rem;color:var(--text-soft);line-height:1.75;}
+
+/* ================================================================
+   13. TESTIMONIAL MARQUEE
+   ================================================================ */
+.tmarquee{
+  display:flex;flex-direction:column;gap:20px;overflow:hidden;
+  max-width:100%;
+  padding:6px 0 10px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
+}
+.t-row{overflow:hidden;max-width:100%;}
+.t-track{display:flex;width:max-content;animation:marq 52s linear infinite;}
+.t-row.rev .t-track{animation-direction:reverse;animation-duration:60s;}
+.t-row:hover .t-track{animation-play-state:paused;}
+.t-set{display:flex;gap:20px;padding-right:20px;}
+@keyframes marq{to{transform:translateX(-50%);}}
+
+.tcard{
+  flex:0 0 344px;background:#fff;border:1.5px solid var(--line);
+  border-radius:var(--r-m);padding:26px 26px 24px;
+  display:flex;flex-direction:column;gap:16px;
+  transition:all .4s var(--ease);position:relative;
+}
+.tcard:hover{border-color:rgba(255,152,0,.45);box-shadow:var(--sh2);transform:translateY(-5px);}
+.tcard .q{
+  position:absolute;top:16px;right:22px;
+  font-family:Georgia,serif;font-size:3.4rem;line-height:1;
+  color:rgba(255,152,0,.13);pointer-events:none;
+}
+.tcard .stars{color:var(--orange);font-size:.82rem;letter-spacing:2.5px;}
+.tcard p{font-size:.88rem;color:var(--text-soft);line-height:1.72;flex:1;}
+.tuser{display:flex;align-items:center;gap:13px;padding-top:16px;border-top:1px dashed var(--line);}
+.tavatar{
+  width:44px;height:44px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;color:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.13);
+}
+.tavatar.g1{background:linear-gradient(135deg,var(--green),var(--green-l));}
+.tavatar.g2{background:linear-gradient(135deg,var(--orange),var(--orange-d));}
+.tavatar.g3{background:linear-gradient(135deg,#00897B,#26A69A);}
+.tavatar.g4{background:linear-gradient(135deg,#5E35B1,#7E57C2);}
+.tavatar.g5{background:linear-gradient(135deg,#C2185B,#EC407A);}
+.tavatar.g6{background:linear-gradient(135deg,#0277BD,#29B6F6);}
+.tuser strong{display:block;font-size:.86rem;font-weight:800;letter-spacing:-.01em;}
+.tuser small{font-size:.71rem;color:var(--text-mute);font-weight:600;}
+
+/* ================================================================
+   14. NEWSLETTER
+   ================================================================ */
+.news{
+  position:relative;border-radius:var(--r-xl);overflow:hidden;
+  background:linear-gradient(135deg,#FFFDF6 0%,#FFF4DE 100%);
+  border:1.5px solid var(--line);
+  padding:64px 48px;text-align:center;box-shadow:var(--sh1);
+}
+.news::before{
+  content:'';position:absolute;top:-110px;left:-90px;
+  width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,125,50,.12),transparent 70%);
+  animation:drift 17s ease-in-out infinite;
+}
+.news::after{
+  content:'';position:absolute;bottom:-130px;right:-90px;
+  width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,152,0,.16),transparent 70%);
+  animation:drift 14s ease-in-out infinite reverse;
+}
+.news-inner{position:relative;z-index:2;max-width:640px;margin:0 auto;}
+.news h2{font-size:clamp(1.7rem,3.5vw,2.5rem);margin-bottom:14px;}
+.news h2 em{font-style:normal;color:var(--orange);}
+.news p{font-size:.95rem;color:var(--text-soft);line-height:1.75;margin-bottom:30px;}
+
+.news-form{
+  display:flex;gap:8px;background:#fff;
+  border:1.5px solid var(--line);border-radius:100px;
+  padding:7px;max-width:520px;margin:0 auto 14px;
+  box-shadow:var(--sh1);
+  transition:border-color .3s ease,box-shadow .3s ease;
+}
+.news-form:focus-within{border-color:var(--orange);box-shadow:0 0 0 5px rgba(255,152,0,.11);}
+.news-form input{
+  flex:1;min-width:0;border:none;outline:none;background:transparent;
+  padding:12px 20px;font-family:inherit;font-size:.9rem;color:var(--text);
+}
+.news-form input::placeholder{color:var(--text-mute);}
+.news-form input.error{color:var(--red);}
+.news-msg{font-size:.8rem;font-weight:700;color:var(--red);min-height:20px;opacity:0;transform:translateY(-4px);transition:all .3s ease;}
+.news-msg.show{opacity:1;transform:none;}
+
+.news-chips{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px;}
+.news-chips span{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:100px;padding:8px 16px;
+  font-size:.74rem;font-weight:700;color:var(--text-soft);
+  transition:all .3s var(--ease);
+}
+.news-chips span:hover{border-color:var(--orange);transform:translateY(-3px);color:var(--text);}
+.news-chips i{color:var(--orange-d);}
+
+/* ================================================================
+   15. APP CTA — LIGHT + CSS-built mobile screen
+   ================================================================ */
+.app{
+  position:relative;border-radius:var(--r-xl);overflow:hidden;
+  background:linear-gradient(135deg,#E8F5E9 0%,#F1F8E9 45%,#FFF3E0 100%);
+  border:1.5px solid var(--line);
+  padding:64px 56px;
+  display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:center;
+  box-shadow:var(--sh2);
+}
+.app::before{
+  content:'';position:absolute;top:-110px;right:-110px;
+  width:380px;height:380px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,152,0,.18),transparent 70%);
+  animation:drift 15s ease-in-out infinite;
+}
+.app::after{
+  content:'';position:absolute;bottom:-130px;left:-70px;
+  width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(circle,rgba(46,125,50,.14),transparent 70%);
+  animation:drift 18s ease-in-out infinite reverse;
+}
+.app-copy{position:relative;z-index:2;min-width:0;}
+.app-copy .eyebrow{background:rgba(46,125,50,.09);border-color:rgba(46,125,50,.15);color:var(--green-d);}
+.app-copy h2{color:var(--text);font-size:clamp(1.7rem,3.4vw,2.5rem);margin-bottom:16px;}
+.app-copy h2 em{font-style:normal;color:var(--green);}
+.app-copy p{color:var(--text-soft);font-size:.96rem;line-height:1.75;max-width:480px;margin-bottom:30px;}
+
+.stores{display:flex;gap:12px;flex-wrap:wrap;}
+.store{
+  display:inline-flex;align-items:center;gap:12px;
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:16px;padding:12px 22px;
+  transition:all .35s var(--ease);box-shadow:var(--sh1);
+}
+.store:hover{transform:translateY(-4px);box-shadow:var(--sh2);border-color:var(--orange);}
+.store i{font-size:1.65rem;color:var(--green-d);}
+.store b{display:block;font-size:.9rem;font-weight:800;color:var(--green-d);letter-spacing:-.02em;line-height:1.2;}
+.store small{display:block;font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-mute);}
+
+.app-visual{
+  position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:center;
+  min-height:460px;
+}
+
+/* --- Phone with CSS-built app screen --- */
+.phone{
+  width:262px;max-width:100%;aspect-ratio:9/18.8;
+  border-radius:40px;
+  background:#fff;
+  overflow:hidden;
+  position:relative;
+  padding:14px 12px;
+  box-shadow:
+    0 0 0 3px rgba(27,58,31,.08),
+    0 0 0 8px #fff,
+    0 34px 70px rgba(27,58,31,.24);
+  animation:phoneFloat 6s ease-in-out infinite;
+}
+@keyframes phoneFloat{
+  0%,100%{transform:translateY(0) rotate(-2deg);}
+  50%{transform:translateY(-16px) rotate(1.5deg);}
+}
+
+.phone-notch{
+  position:absolute;top:8px;left:50%;transform:translateX(-50%);
+  width:80px;height:16px;border-radius:100px;
+  background:#E8F0E2;
+  z-index:5;
+}
+
+.pui{
+  position:relative;
+  width:100%;height:100%;
+  border-radius:26px;
+  background:linear-gradient(180deg,#F7FBF2 0%,#FFFCF4 100%);
+  overflow:hidden;
+  padding:32px 12px 76px;
+  display:flex;flex-direction:column;gap:10px;
+}
+
+.pui-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 6px 4px;
+}
+.pui-head .brand{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'Outfit',sans-serif;font-weight:900;font-size:.78rem;
+  color:var(--green-d);letter-spacing:-.02em;
+}
+.pui-head .brand i{
+  width:20px;height:20px;border-radius:6px;
+  background:linear-gradient(135deg,var(--green),var(--green-l));
+  color:#fff;display:inline-flex;align-items:center;justify-content:center;
+  font-size:.58rem;
+}
+.pui-head .dots{
+  display:flex;gap:4px;
+}
+.pui-head .dots i{
+  width:4px;height:4px;border-radius:50%;background:var(--green-d);
+  opacity:.55;
+}
+
+.pui-search{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:12px;padding:8px 12px;
+  font-size:.66rem;font-weight:700;color:var(--text-mute);
+  box-shadow:0 4px 12px rgba(27,58,31,.05);
+}
+.pui-search i{color:var(--green);font-size:.72rem;}
+
+.pui-banner{
+  position:relative;border-radius:14px;
+  padding:14px 14px;
+  background:linear-gradient(135deg,var(--orange),var(--orange-d));
+  color:#fff;overflow:hidden;
+  box-shadow:0 10px 22px rgba(255,152,0,.3);
+}
+.pui-banner::after{
+  content:'';position:absolute;top:-20px;right:-20px;
+  width:70px;height:70px;border-radius:50%;
+  background:rgba(255,255,255,.16);
+}
+.pui-banner strong{
+  display:block;font-family:'Outfit',sans-serif;
+  font-size:.95rem;font-weight:900;letter-spacing:-.02em;line-height:1;
+  margin-bottom:3px;
+}
+.pui-banner span{font-size:.6rem;font-weight:700;opacity:.9;letter-spacing:.3px;}
+
+.pui-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;
+  flex:1;
+}
+.pui-item{
+  background:#fff;border:1.5px solid var(--line);
+  border-radius:12px;padding:8px;
+  display:flex;flex-direction:column;gap:6px;
+  box-shadow:0 4px 10px rgba(27,58,31,.04);
+}
+.pui-thumb{
+  width:100%;aspect-ratio:1/1;border-radius:8px;
+  background:linear-gradient(135deg,rgba(46,125,50,.14),rgba(255,152,0,.14));
+  position:relative;overflow:hidden;
+}
+.pui-thumb::after{
+  content:'';
+  position:absolute;inset:0;
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.5),transparent 55%),
+    radial-gradient(circle at 70% 70%,rgba(255,152,0,.2),transparent 60%);
+}
+.pui-item span{
+  font-size:.56rem;font-weight:800;color:var(--text);
+  letter-spacing:-.01em;line-height:1.1;
+}
+.pui-item small{
+  font-size:.5rem;font-weight:700;color:var(--green);
+}
+
+.pui-cart{
+  position:absolute;left:12px;right:12px;bottom:12px;
+  display:flex;align-items:center;gap:10px;
+  background:var(--green-d);
+  color:#fff;border-radius:14px;
+  padding:12px 14px;
+  font-size:.68rem;font-weight:800;
+  box-shadow:0 14px 28px rgba(27,94,32,.36);
+}
+.pui-cart i:first-child{
+  width:26px;height:26px;border-radius:8px;
+  background:rgba(255,255,255,.16);
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;
+}
+.pui-cart span{flex:1;letter-spacing:.2px;}
+.pui-cart i:last-child{color:var(--orange-l);font-size:.75rem;}
+
+.app-float{
+  position:absolute;
+  background:#fff;border:1.5px solid var(--line);border-radius:15px;
+  padding:11px 15px;
+  display:flex;align-items:center;gap:10px;
+  font-size:.74rem;font-weight:800;color:var(--text);
+  box-shadow:0 16px 34px rgba(27,58,31,.14);
+  z-index:4;
+}
+.app-float i{font-size:.95rem;}
+.app-float small{display:block;font-size:.63rem;font-weight:600;color:var(--text-mute);}
+.af1{top:14%;left:-8%;animation:floaty 5s ease-in-out infinite;}
+.af1 i{color:var(--green);}
+.af2{bottom:16%;right:-8%;animation:floaty 6s ease-in-out infinite .8s;}
+.af2 i{color:var(--orange);}
+
+/* ================================================================
+   15b. AOS SAFETY — entry animations must never widen the page
+   ================================================================ */
+@media (max-width:900px){
+  [data-aos="fade-left"],
+  [data-aos="fade-right"]{
+    transform:translate3d(0,34px,0) !important;
+    opacity:0;
+  }
+  [data-aos="fade-left"].aos-animate,
+  [data-aos="fade-right"].aos-animate{
+    transform:translate3d(0,0,0) !important;
+    opacity:1;
+  }
+}
+
+/* ================================================================
+   16. RESPONSIVE
+   ================================================================ */
+@media (max-width:1100px){
+  .bento{grid-template-columns:repeat(3,1fr);}
+  .tile.big{grid-column:span 2;grid-row:span 2;}
+  .tile.wide{grid-column:span 2;}
+}
+
+@media (max-width:1024px){
+  .sec{padding:62px 0;}
+  .hero-grid{grid-template-columns:1fr;gap:46px;}
+  .hero-stage{max-width:440px;margin:0 auto;}
+  .hero-sub{max-width:100%;}
+  .ring{width:100px;height:100px;right:0;}
+  .statbar{grid-template-columns:repeat(2,1fr);gap:22px 0;}
+  .deal{grid-template-columns:1fr;}
+  .deal-media{min-height:280px;}
+  .deal-body{padding:44px 36px;}
+  .why-grid{grid-template-columns:1fr;gap:40px;}
+  .why-sticky{position:static;}
+  .app{grid-template-columns:1fr;padding:48px 38px;gap:44px;}
+  .app-visual{min-height:440px;}
+  .news{padding:52px 34px;}
+}
+
+@media (max-width:900px){
+  .bento{grid-template-columns:repeat(2,1fr);grid-auto-rows:172px;}
+  .tile.big{grid-column:span 2;grid-row:span 2;}
+  .tile.wide{grid-column:span 2;}
+  .tl-card{padding:22px;}
+}
+
+@media (max-width:768px){
+  .fcard{display:none;}
+  .ring{width:86px;height:86px;}
+  .ring-center{width:38px;height:38px;font-size:.85rem;}
+
+  .tl-line{left:26px;}
+  .tl-item,.tl-item:nth-child(even){width:100%;margin-left:0;padding:0 0 34px 66px;}
+  .tl-item:nth-child(odd) .tl-node,
+  .tl-item:nth-child(even) .tl-node{left:0;right:auto;width:48px;height:48px;}
+
+  .acc-body p{padding-left:22px;}
+}
+
+@media (max-width:640px){
+  .sec{padding:52px 0;}
+  .wrap{padding:0 16px;}
+  .hero{padding:34px 0 20px;}
+  .hero-title{font-size:2.05rem;}
+  .hero-cta{flex-direction:column;align-items:stretch;}
+  .hero-cta .btn{justify-content:center;}
+  .hero-stage{max-width:320px;}
+  .hero-proof{gap:12px;}
+
+  .statbar{grid-template-columns:1fr;gap:0;padding:8px 18px;}
+  .stat{border-right:none;border-bottom:1px dashed var(--line);padding:20px 0;}
+  .stat:last-child{border-bottom:none;}
+
+  .bento{grid-template-columns:1fr;grid-auto-rows:auto;}
+  .tile{min-height:170px;grid-column:span 1 !important;grid-row:span 1 !important;}
+  .tile.big .tile-body h3{font-size:1.2rem;}
+  .tile.big .tile-body{padding:20px 22px;}
+  .tile-go{opacity:1;transform:none;}
+
+  .pcard{flex:0 0 232px;}
+
+  .deal-stamp{width:84px;height:84px;top:20px;left:20px;}
+  .deal-stamp strong{font-size:1.3rem;}
+  .deal-body{padding:34px 22px;}
+  .deal-actions{flex-direction:column;align-items:stretch;}
+  .deal-actions .btn{justify-content:center;}
+  .cd-box{min-width:64px;padding:11px 10px;}
+  .cd-num{font-size:1.3rem;}
+
+  .tcard{flex:0 0 280px;padding:22px;}
+
+  .news{padding:40px 20px;border-radius:26px;}
+  .news-form{flex-direction:column;border-radius:22px;padding:9px;}
+  .news-form input{padding:12px 16px;text-align:center;}
+  .news-form .btn{justify-content:center;width:100%;}
+
+  .app{padding:38px 22px;border-radius:26px;}
+  .stores{flex-direction:column;}
+  .store{justify-content:center;}
+  .phone{width:228px;}
+  .af1,.af2{display:none;}
+  .app-visual{min-height:420px;}
+
+  .rail-head{flex-direction:column;align-items:flex-start;}
+}
+
+@media (max-width:380px){
+  .hero-title{font-size:1.8rem;}
+  .head h2{font-size:1.5rem;}
+  .cd-box{min-width:56px;padding:9px 8px;}
+  .cd-num{font-size:1.1rem;}
+  .pre-brand{font-size:1.55rem;}
+  .pre-logo-wrap{width:140px;height:140px;}
+  .pre-logo{width:78px;height:78px;}
+  .phone{width:210px;}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PRELOADER ================= -->
+<div id="preloader" aria-hidden="true">
+  <span class="pre-blob pre-b1"></span>
+  <span class="pre-blob pre-b2"></span>
+  <span class="pre-blob pre-b3"></span>
+
+  <div class="pre-inner">
+    <div class="pre-logo-wrap">
+      <svg class="pre-ring" viewBox="0 0 160 160" aria-hidden="true">
+        <defs>
+          <linearGradient id="preGradA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#2E7D32"/>
+            <stop offset="55%" stop-color="#43A047"/>
+            <stop offset="100%" stop-color="#FF9800"/>
+          </linearGradient>
+        </defs>
+        <circle class="pre-track" cx="80" cy="80" r="70"/>
+        <circle class="pre-progress" id="preProgress" cx="80" cy="80" r="70"/>
+      </svg>
+      <span class="pre-glow"></span>
+      <img src="logoo3.webp" alt="Stackly" class="pre-logo">
+    </div>
+
+    <div class="pre-brand">Online <span class="dot"></span></div>
+    <div class="pre-tag">Grocery Store</div>
+    <div class="pre-percent" id="prePercent">0%</div>
+  </div>
+</div>
+
+<!-- ================= SCROLL PROGRESS ================= -->
+<div id="scrollProgress"></div>
+
+<!-- ================= HEADER ================= -->
+<div id="header-placeholder"></div>
+
+<main>
+
+  <!-- ================= TICKER (DARK — only dark section) ================= -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <div class="ticker-set">
+        <span class="ticker-item"><i class="fas fa-truck-fast"></i> Free delivery over $50</span>
+        <span class="ticker-item"><i class="fas fa-seedling"></i> Farm fresh, picked daily</span>
+        <span class="ticker-item"><i class="fas fa-bolt"></i> 2-hour express delivery</span>
+        <span class="ticker-item"><i class="fas fa-tags"></i> Up to 50% off this week</span>
+        <span class="ticker-item"><i class="fas fa-shield-halved"></i> Secure checkout</span>
+        <span class="ticker-item"><i class="fas fa-rotate-left"></i> Easy no-hassle returns</span>
+      </div>
+      <div class="ticker-set">
+        <span class="ticker-item"><i class="fas fa-truck-fast"></i> Free delivery over $50</span>
+        <span class="ticker-item"><i class="fas fa-seedling"></i> Farm fresh, picked daily</span>
+        <span class="ticker-item"><i class="fas fa-bolt"></i> 2-hour express delivery</span>
+        <span class="ticker-item"><i class="fas fa-tags"></i> Up to 50% off this week</span>
+        <span class="ticker-item"><i class="fas fa-shield-halved"></i> Secure checkout</span>
+        <span class="ticker-item"><i class="fas fa-rotate-left"></i> Easy no-hassle returns</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <span class="blob b1"></span>
+    <span class="blob b2"></span>
+    <span class="blob b3"></span>
+
+    <div class="wrap">
+      <div class="hero-grid">
+
+        <div class="hero-copy">
+          <span class="chip" data-aos="fade-down">
+            <span class="dot"></span>
+            <i class="fas fa-bolt"></i> Delivered in 2 hours
+          </span>
+
+          <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">
+            Groceries that<br>
+            taste like the <span class="hl">farm</span>,<br>
+            not the <span class="ol">warehouse</span>.
+          </h1>
+
+          <p class="hero-sub" data-aos="fade-up" data-aos-delay="180">
+            Over 10,000 fresh fruits, vegetables, dairy, bakery and everyday
+            essentials — handpicked from 32+ local farms and at your door
+            before dinner.
+          </p>
+
+          <div class="hero-cta" data-aos="fade-up" data-aos-delay="250">
+            <a href="404.html" class="btn btn-lg btn-orange">
+              <i class="fas fa-basket-shopping"></i> Start Shopping
+            </a>
+            <a href="404.html" class="btn btn-lg btn-ghost">
+              <i class="fas fa-circle-play"></i> How It Works
+            </a>
+          </div>
+
+          <div class="hero-proof" data-aos="fade-up" data-aos-delay="320">
+            <div class="avatars">
+              <span>SM</span><span>RK</span><span>EJ</span><span>+9</span>
+            </div>
+            <div class="proof-text">
+              <strong>50,000+ happy families</strong>
+              <span class="stars">★★★★★</span>
+              <small>4.9 average rating</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-stage" data-aos="zoom-in" data-aos-delay="150">
+
+          <div class="stage-main">
+            <img src="vegetablesection1.webp"
+                 alt="Fresh groceries basket" loading="eager"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-basket-shopping ph"></i>
+          </div>
+
+          <div class="ring">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <defs>
+                <path id="ringPath"
+                      d="M60,60 m-44,0 a44,44 0 1,1 88,0 a44,44 0 1,1 -88,0"/>
+              </defs>
+              <text>
+                <textPath href="404.html" startOffset="0">
+                  FARM FRESH • FREE DELIVERY • ORDER NOW •
+                </textPath>
+              </text>
+            </svg>
+            <span class="ring-center"><i class="fas fa-leaf"></i></span>
+          </div>
+
+          <div class="fcard fc1">
+            <i class="fas fa-truck-fast"></i>
+            <div>2-Hour Delivery<small>Live driver tracking</small></div>
+          </div>
+
+          <div class="fcard fc2">
+            <i class="fas fa-seedling"></i>
+            <div>100% Organic<small>Certified farms</small></div>
+          </div>
+
+          <div class="fcard fc3">
+            <i class="fas fa-star"></i>
+            <div>4.9 / 5.0<small>12,480 reviews</small></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="statbar" data-aos="fade-up" data-aos-delay="120">
+        <div class="stat">
+          <strong data-count="50" data-suffix="K+">0</strong>
+          <span>Happy Families</span>
+        </div>
+        <div class="stat">
+          <strong data-count="10" data-suffix="K+">0</strong>
+          <span>Fresh Products</span>
+        </div>
+        <div class="stat">
+          <strong data-count="32" data-suffix="+">0</strong>
+          <span>Partner Farms</span>
+        </div>
+        <div class="stat">
+          <strong data-count="2" data-suffix=" hr">0</strong>
+          <span>Express Delivery</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= BENTO CATEGORIES (only arrows are links) ================= -->
+  <section class="sec" id="categories">
+    <div class="wrap">
+
+      <div class="head" data-aos="fade-up">
+        <span class="eyebrow"><i class="fas fa-layer-group"></i> Browse Categories</span>
+        <h2>Everything you need, <em>beautifully organised</em></h2>
+        <p>Six curated aisles, zero queues. Tap the arrow to explore each range.</p>
+      </div>
+
+      <div class="bento">
+
+        <div class="tile big" data-aos="zoom-in">
+          <img src="fruit1.webp"
+               alt="Fresh fruits" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <a href="404.html" class="tile-go" aria-label="View Fresh Fruits"><i class="fas fa-arrow-right"></i></a>
+          <div class="tile-body">
+            <span class="tile-pill"><i class="fas fa-fire"></i> Best Seller</span>
+            <h3>Fresh Fruits</h3>
+            <span>120+ items · picked this morning</span>
+          </div>
+        </div>
+
+        <div class="tile wide" data-aos="zoom-in" data-aos-delay="80">
+          <img src="veg1.webp"
+               alt="Vegetables" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <a href="404.html" class="tile-go" aria-label="View Vegetables"><i class="fas fa-arrow-right"></i></a>
+          <div class="tile-body">
+            <h3>Vegetables</h3>
+            <span>95+ items · farm to door in hours</span>
+          </div>
+        </div>
+
+        <div class="tile" data-aos="zoom-in" data-aos-delay="140">
+          <img src="milk.webp"
+               alt="Dairy and eggs" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <a href="404.html" class="tile-go" aria-label="View Dairy and Eggs"><i class="fas fa-arrow-right"></i></a>
+          <div class="tile-body">
+            <h3>Dairy &amp; Eggs</h3>
+            <span>75+ items</span>
+          </div>
+        </div>
+
+        <div class="tile" data-aos="zoom-in" data-aos-delay="200">
+          <img src="bread.webp"
+               alt="Bakery" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <a href="404.html" class="tile-go" aria-label="View Bakery"><i class="fas fa-arrow-right"></i></a>
+          <div class="tile-body">
+            <h3>Bakery</h3>
+            <span>50+ items</span>
+          </div>
+        </div>
+
+        <div class="tile wide" data-aos="zoom-in" data-aos-delay="260">
+          <img src="snack.webp"
+               alt="Snacks" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <a href="404.html" class="tile-go" aria-label="View Snacks"><i class="fas fa-arrow-right"></i></a>
+          <div class="tile-body">
+            <h3>Snacks</h3>
+            <span>200+ items · sweet &amp; savoury</span>
+          </div>
+        </div>
+
+        <div class="tile wide" data-aos="zoom-in" data-aos-delay="320">
+          <img src="orangejuice.webp"
+               alt="Beverages" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <a href="404.html" class="tile-go" aria-label="View Beverages"><i class="fas fa-arrow-right"></i></a>
+          <div class="tile-body">
+            <h3>Beverages</h3>
+            <span>140+ items · juices, coffee &amp; more</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRODUCT RAIL ================= -->
+  <section class="sec" style="padding-top:0;">
+    <div class="wrap">
+
+      <div class="rail-head" data-aos="fade-up">
+        <div class="head" style="margin-bottom:0;max-width:560px;">
+          <span class="eyebrow"><i class="fas fa-fire"></i> Customer Favourites</span>
+          <h2>Trending <em>this week</em></h2>
+          <p>Best-selling picks our customers keep coming back for.</p>
+        </div>
+        <div class="rail-nav">
+          <button class="icon-btn rail-prev" aria-label="Previous products">
+            <i class="fas fa-arrow-left"></i>
+          </button>
+          <button class="icon-btn orange rail-next" aria-label="Next products">
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="rail" id="productRail" data-aos="fade-up" data-aos-delay="100">
+
+        <article class="pcard">
+          <div class="pmedia">
+            <span class="ptag green">Organic</span>
+            <span class="pfav"><i class="fas fa-heart"></i></span>
+            <img src="avocados.webp"
+                 alt="Avocados" loading="lazy"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-seedling ph"></i>
+          </div>
+          <div class="pbody">
+            <div class="pcat">Fresh Fruits</div>
+            <h3 class="pname">Organic Hass Avocados</h3>
+            <div class="pweight">Pack of 4 · Ready to eat</div>
+            <div class="pstars"><span class="s">★★★★★</span><span class="c">(240)</span></div>
+            <div class="pfoot">
+              <div>
+                <div class="pprice">$6.49</div>
+                <div class="pold">$9.99</div>
+              </div>
+              <a href="404.html" class="icon-btn" aria-label="View avocados"><i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard">
+          <div class="pmedia">
+            <span class="ptag red">-30%</span>
+            <span class="pfav"><i class="fas fa-heart"></i></span>
+            <img src="egg.webp"
+                 alt="Milk" loading="lazy"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-cow ph"></i>
+          </div>
+          <div class="pbody">
+            <div class="pcat">Dairy &amp; Eggs</div>
+            <h3 class="pname">Organic Whole Milk</h3>
+            <div class="pweight">2 L · Chilled fresh</div>
+            <div class="pstars"><span class="s">★★★★★</span><span class="c">(185)</span></div>
+            <div class="pfoot">
+              <div>
+                <div class="pprice">$3.49</div>
+                <div class="pold">$4.99</div>
+              </div>
+              <a href="404.html" class="icon-btn" aria-label="View milk"><i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard">
+          <div class="pmedia">
+            <span class="ptag">-25%</span>
+            <span class="pfav"><i class="fas fa-heart"></i></span>
+            <img src="bread.webp"
+                 alt="Sourdough bread" loading="lazy"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-bread-slice ph"></i>
+          </div>
+          <div class="pbody">
+            <div class="pcat">Bakery</div>
+            <h3 class="pname">Artisan Sourdough Loaf</h3>
+            <div class="pweight">500 g · Baked today</div>
+            <div class="pstars"><span class="s">★★★★☆</span><span class="c">(96)</span></div>
+            <div class="pfoot">
+              <div>
+                <div class="pprice">$4.49</div>
+                <div class="pold">$5.99</div>
+              </div>
+              <a href="404.html" class="icon-btn" aria-label="View bread"><i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard">
+          <div class="pmedia">
+            <span class="ptag green">New</span>
+            <span class="pfav"><i class="fas fa-heart"></i></span>
+            <img src="straberry.webp"
+                 alt="Strawberries" loading="lazy"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-apple-whole ph"></i>
+          </div>
+          <div class="pbody">
+            <div class="pcat">Fresh Fruits</div>
+            <h3 class="pname">Organic Strawberries</h3>
+            <div class="pweight">500 g · Family pack</div>
+            <div class="pstars"><span class="s">★★★★★</span><span class="c">(312)</span></div>
+            <div class="pfoot">
+              <div>
+                <div class="pprice">$4.99</div>
+                <div class="pold">$8.99</div>
+              </div>
+              <a href="404.html" class="icon-btn" aria-label="View strawberries"><i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard">
+          <div class="pmedia">
+            <span class="ptag">-20%</span>
+            <span class="pfav"><i class="fas fa-heart"></i></span>
+            <img src="orangejuice.webp"
+                 alt="Fresh juice" loading="lazy"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-mug-hot ph"></i>
+          </div>
+          <div class="pbody">
+            <div class="pcat">Beverages</div>
+            <h3 class="pname">Cold-Pressed Orange Juice</h3>
+            <div class="pweight">1 L · No added sugar</div>
+            <div class="pstars"><span class="s">★★★★☆</span><span class="c">(148)</span></div>
+            <div class="pfoot">
+              <div>
+                <div class="pprice">$5.29</div>
+                <div class="pold">$6.59</div>
+              </div>
+              <a href="404.html" class="icon-btn" aria-label="View juice"><i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </article>
+
+        <article class="pcard">
+          <div class="pmedia">
+            <span class="ptag green">Organic</span>
+            <span class="pfav"><i class="fas fa-heart"></i></span>
+            <img src="veg2.webp"
+                 alt="Potatoes" loading="lazy"
+                 onerror="this.parentElement.classList.add('no-img');">
+            <i class="fas fa-carrot ph"></i>
+          </div>
+          <div class="pbody">
+            <div class="pcat">Vegetables</div>
+            <h3 class="pname">Baby Potatoes</h3>
+            <div class="pweight">1 kg · Washed &amp; ready</div>
+            <div class="pstars"><span class="s">★★★★★</span><span class="c">(210)</span></div>
+            <div class="pfoot">
+              <div>
+                <div class="pprice">$2.99</div>
+                <div class="pold">$3.99</div>
+              </div>
+              <a href="404.html" class="icon-btn" aria-label="View potatoes"><i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <div style="text-align:center;margin-top:14px;" data-aos="fade-up">
+        <a href="404.html" class="btn btn-green btn-lg">
+          <i class="fas fa-store"></i> Browse the full store
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= TIMELINE / HOW IT WORKS ================= -->
+  <section class="sec" id="how">
+    <div class="wrap">
+
+      <div class="head center" data-aos="fade-up">
+        <span class="eyebrow green"><i class="fas fa-list-check"></i> Simple Process</span>
+        <h2>From cart to doorstep in <em>four steps</em></h2>
+        <p>No queues, no parking, no wilted lettuce. Just fresh food, fast.</p>
+      </div>
+
+      <div class="timeline" id="timeline">
+        <span class="tl-line"><span class="tl-fill" id="tlFill"></span></span>
+
+        <div class="tl-item" data-aos="fade-right">
+          <span class="tl-node"><i class="fas fa-basket-shopping"></i></span>
+          <div class="tl-card">
+            <div class="tl-step">Step 01</div>
+            <h3>Fill your basket</h3>
+            <p>Browse 10,000+ products with live stock, real photos and honest pricing. Save favourites for one-tap reordering.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-aos="fade-left">
+          <span class="tl-node"><i class="fas fa-clock"></i></span>
+          <div class="tl-card">
+            <div class="tl-step">Step 02</div>
+            <h3>Pick a 2-hour slot</h3>
+            <p>Choose a delivery window that fits your day — morning, afternoon or late evening. Reschedule free until we pack.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-aos="fade-right">
+          <span class="tl-node"><i class="fas fa-boxes-packing"></i></span>
+          <div class="tl-card">
+            <div class="tl-step">Step 03</div>
+            <h3>We hand-pack it fresh</h3>
+            <p>Our pickers select each item by hand, weigh it, and pack chilled goods in insulated liners to lock in freshness.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-aos="fade-left">
+          <span class="tl-node"><i class="fas fa-house-circle-check"></i></span>
+          <div class="tl-card">
+            <div class="tl-step">Step 04</div>
+            <h3>Track it to your door</h3>
+            <p>Follow your driver live on the map and get a knock when they arrive. Contactless drop-off available on request.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DEAL OF THE DAY ================= -->
+  <section class="sec" style="padding-top:0;">
+    <div class="wrap">
+      <div class="deal" data-aos="zoom-in">
+
+        <div class="deal-media">
+          <img src="fruit2.webp"
+               alt="Fresh fruit basket" loading="lazy"
+               onerror="this.parentElement.classList.add('no-img');">
+          <i class="fas fa-apple-whole dm-ph"></i>
+          <div class="deal-stamp">
+            <strong>30%</strong>
+            <span>OFF</span>
+          </div>
+        </div>
+
+        <div class="deal-body">
+          <span class="eyebrow"><i class="fas fa-gift"></i> Weekend Special</span>
+          <h2>Fresh Fruit <em>Family Basket</em></h2>
+          <p>
+            Six seasonal fruits, handpicked from local farms within 24 hours of
+            harvest. Perfect for the week ahead — and 30% cheaper than buying
+            them one by one.
+          </p>
+
+          <div class="countdown">
+            <div class="cd-box">
+              <div class="cd-num" id="cdDays">02</div>
+              <div class="cd-label">Days</div>
+            </div>
+            <div class="cd-box">
+              <div class="cd-num" id="cdHours">14</div>
+              <div class="cd-label">Hours</div>
+            </div>
+            <div class="cd-box">
+              <div class="cd-num" id="cdMins">32</div>
+              <div class="cd-label">Mins</div>
+            </div>
+            <div class="cd-box">
+              <div class="cd-num" id="cdSecs">08</div>
+              <div class="cd-label">Secs</div>
+            </div>
+          </div>
+
+          <div class="deal-progress">
+            <div class="bar-top">
+              <span>Claimed today</span>
+              <span><b>73</b> / 100 baskets</span>
+            </div>
+            <div class="deal-bar"><i id="dealBar"></i></div>
+          </div>
+
+          <div class="deal-actions">
+            <a href="404.html" class="btn btn-lg btn-orange">
+              <i class="fas fa-cart-plus"></i> Claim This Offer
+            </a>
+            <a href="404.html" class="btn btn-lg btn-ghost">
+              <i class="fas fa-list"></i> See What's Inside
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= WHY CHOOSE US ================= -->
+  <section class="sec" style="padding-top:0;">
+    <div class="wrap">
+      <div class="why-grid">
+
+        <div class="why-sticky" data-aos="fade-right">
+          <span class="eyebrow"><i class="fas fa-star"></i> Why Choose Us</span>
+          <h2>The <em>Stackly</em> promise</h2>
+          <p>
+            We're not another faceless marketplace. We're your neighbourhood
+            market — just without the queue at the till.
+          </p>
+
+          <div class="why-mini">
+            <div><i class="fas fa-leaf"></i> 32+ local farms</div>
+            <div><i class="fas fa-bolt"></i> 2-hour delivery</div>
+            <div><i class="fas fa-tags"></i> Price-match promise</div>
+          </div>
+
+          <a href="404.html" class="btn btn-green">
+            <i class="fas fa-basket-shopping"></i> Shop with confidence
+          </a>
+        </div>
+
+        <div class="accordion" id="accordion" data-aos="fade-left">
+
+          <div class="acc-item open">
+            <button class="acc-head" type="button">
+              <span class="acc-ico"><i class="fas fa-leaf"></i></span>
+              <span class="acc-title">Farm-fresh quality, guaranteed</span>
+              <span class="acc-plus"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="acc-body">
+              <p>
+                Every fruit and vegetable is picked daily from 32+ partner farms
+                and reaches you within hours of harvest. If anything arrives less
+                than perfect, we refund it — no photos, no forms, no fuss.
+              </p>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-head" type="button">
+              <span class="acc-ico"><i class="fas fa-truck-fast"></i></span>
+              <span class="acc-title">Same-day delivery, in as little as 2 hours</span>
+              <span class="acc-plus"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="acc-body">
+              <p>
+                Order before 6 PM and we'll deliver the same day. Most orders land
+                within two hours. Chilled items travel in insulated liners so your
+                milk arrives as cold as it left the depot.
+              </p>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-head" type="button">
+              <span class="acc-ico"><i class="fas fa-tags"></i></span>
+              <span class="acc-title">Direct-from-farm pricing</span>
+              <span class="acc-plus"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="acc-body">
+              <p>
+                By buying straight from growers we cut out the middlemen — and pass
+                the savings on to you. Find the same item cheaper at your local
+                store? Show us and we'll match it plus 5%.
+              </p>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-head" type="button">
+              <span class="acc-ico"><i class="fas fa-shield-halved"></i></span>
+              <span class="acc-title">Bank-grade security on every order</span>
+              <span class="acc-plus"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="acc-body">
+              <p>
+                Payments are encrypted end-to-end and we never store raw card
+                details on our servers. Pay by card, wallet or on delivery —
+                whatever feels safest to you.
+              </p>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-head" type="button">
+              <span class="acc-ico"><i class="fas fa-headset"></i></span>
+              <span class="acc-title">Real humans, 24 hours a day</span>
+              <span class="acc-plus"><i class="fas fa-plus"></i></span>
+            </button>
+            <div class="acc-body">
+              <p>
+                Chat, call or email at any hour and you'll reach a real person in
+                under two minutes on average. No bots, no ticket numbers, no
+                waiting until Monday.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TESTIMONIALS ================= -->
+  <section class="sec" style="padding-top:0;">
+    <div class="wrap">
+      <div class="head center" data-aos="fade-up">
+        <span class="eyebrow"><i class="fas fa-heart"></i> Loved by families</span>
+        <h2>50,000 kitchens, <em>one weekly habit</em></h2>
+        <p>Real reviews from real shoppers — unedited and unfiltered.</p>
+      </div>
+    </div>
+
+    <div class="tmarquee" data-aos="fade-up">
+
+      <div class="t-row">
+        <div class="t-track">
+          <div class="t-set">
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>The produce is always crisp and delivery is unbelievably fast. I haven't stepped into a supermarket in months — and I don't miss it.</p>
+              <div class="tuser">
+                <span class="tavatar g1">SM</span>
+                <div><strong>Sarah Mitchell</strong><small>Weekly shopper · Brooklyn</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>Prices beat my local store and the quality is noticeably better. The 2-hour delivery saved my dinner party last weekend.</p>
+              <div class="tuser">
+                <span class="tavatar g2">RK</span>
+                <div><strong>Rajesh Kumar</strong><small>Frequent buyer · Queens</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★☆</div>
+              <p>Fresh items, careful packing, and a driver who actually calls when he's outside. I've tried four apps — this is the one I kept.</p>
+              <div class="tuser">
+                <span class="tavatar g3">EJ</span>
+                <div><strong>Emily Johnson</strong><small>Family shopper · Manhattan</small></div>
+              </div>
+            </article>
+          </div>
+          <div class="t-set" aria-hidden="true">
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>The produce is always crisp and delivery is unbelievably fast. I haven't stepped into a supermarket in months — and I don't miss it.</p>
+              <div class="tuser">
+                <span class="tavatar g1">SM</span>
+                <div><strong>Sarah Mitchell</strong><small>Weekly shopper · Brooklyn</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>Prices beat my local store and the quality is noticeably better. The 2-hour delivery saved my dinner party last weekend.</p>
+              <div class="tuser">
+                <span class="tavatar g2">RK</span>
+                <div><strong>Rajesh Kumar</strong><small>Frequent buyer · Queens</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★☆</div>
+              <p>Fresh items, careful packing, and a driver who actually calls when he's outside. I've tried four apps — this is the one I kept.</p>
+              <div class="tuser">
+                <span class="tavatar g3">EJ</span>
+                <div><strong>Emily Johnson</strong><small>Family shopper · Manhattan</small></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <div class="t-row rev">
+        <div class="t-track">
+          <div class="t-set">
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>I order for my parents every week. The driver carries the bags to their kitchen door and always waits for them to answer.</p>
+              <div class="tuser">
+                <span class="tavatar g4">DL</span>
+                <div><strong>Daniel Lopez</strong><small>Caregiver · Jersey City</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>The app-only deals are genuinely good. I've cut my grocery bill by about a fifth without changing what we eat.</p>
+              <div class="tuser">
+                <span class="tavatar g5">AP</span>
+                <div><strong>Anita Patel</strong><small>Meal planner · Hoboken</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>Ordered at 4 PM on a Sunday, everything arrived by 6. Even the ice cream was still frozen solid. Genuinely impressive.</p>
+              <div class="tuser">
+                <span class="tavatar g6">MC</span>
+                <div><strong>Marcus Chen</strong><small>Home cook · Astoria</small></div>
+              </div>
+            </article>
+          </div>
+          <div class="t-set" aria-hidden="true">
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>I order for my parents every week. The driver carries the bags to their kitchen door and always waits for them to answer.</p>
+              <div class="tuser">
+                <span class="tavatar g4">DL</span>
+                <div><strong>Daniel Lopez</strong><small>Caregiver · Jersey City</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>The app-only deals are genuinely good. I've cut my grocery bill by about a fifth without changing what we eat.</p>
+              <div class="tuser">
+                <span class="tavatar g5">AP</span>
+                <div><strong>Anita Patel</strong><small>Meal planner · Hoboken</small></div>
+              </div>
+            </article>
+            <article class="tcard">
+              <span class="q">"</span>
+              <div class="stars">★★★★★</div>
+              <p>Ordered at 4 PM on a Sunday, everything arrived by 6. Even the ice cream was still frozen solid. Genuinely impressive.</p>
+              <div class="tuser">
+                <span class="tavatar g6">MC</span>
+                <div><strong>Marcus Chen</strong><small>Home cook · Astoria</small></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= NEWSLETTER ================= -->
+  <section class="sec" style="padding-top:0;">
+    <div class="wrap">
+      <div class="news" data-aos="zoom-in">
+        <div class="news-inner">
+          <span class="eyebrow"><i class="fas fa-bell"></i> Never miss a deal</span>
+          <h2>Get <em>fresh deals</em> before everyone else</h2>
+          <p>
+            One email a week: the best offers, seasonal recipes and members-only
+            coupons. No spam, unsubscribe in one click.
+          </p>
+
+          <form class="news-form" id="newsForm" autocomplete="off">
+            <input type="email" id="newsEmail" placeholder="Enter your email address" aria-label="Email address">
+            <button type="submit" class="btn btn-orange">
+              <i class="fas fa-paper-plane"></i> Subscribe
+            </button>
+          </form>
+          <div class="news-msg" id="newsMsg" role="status"></div>
+
+          <div class="news-chips">
+            <span><i class="fas fa-bolt"></i> Flash sale alerts</span>
+            <span><i class="fas fa-ticket"></i> Members-only coupons</span>
+            <span><i class="fas fa-clock"></i> Early access</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= APP CTA — CSS-built mobile screen ================= -->
+  <section class="sec" style="padding-top:0;padding-bottom:80px;">
+    <div class="wrap">
+      <div class="app" data-aos="zoom-in">
+
+        <div class="app-copy">
+          <span class="eyebrow"><i class="fas fa-mobile-screen"></i> Stackly App</span>
+          <h2>Shop faster with the <em>Stackly app</em></h2>
+          <p>
+            One-tap reordering, live driver tracking, app-only deals and instant
+            checkout. Download free and get $10 off your first order.
+          </p>
+
+          <div class="stores">
+            <a href="404.html" class="store">
+              <i class="fab fa-apple"></i>
+              <div>
+                <small>Download on the</small>
+                <b>App Store</b>
+              </div>
+            </a>
+            <a href="404.html" class="store">
+              <i class="fab fa-google-play"></i>
+              <div>
+                <small>Get it on</small>
+                <b>Google Play</b>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="app-visual">
+
+          <!-- CSS-built phone with in-app grocery UI -->
+          <div class="phone">
+            <span class="phone-notch"></span>
+
+            <div class="pui">
+
+              <div class="pui-head">
+                <span class="brand"><i class="fas fa-basket-shopping"></i> Stackly</span>
+                <span class="dots"><i></i><i></i><i></i></span>
+              </div>
+
+              <div class="pui-search">
+                <i class="fas fa-magnifying-glass"></i>
+                <span>Search fresh groceries…</span>
+              </div>
+
+              <div class="pui-banner">
+                <strong>30% OFF</strong>
+                <span>Seasonal fruit baskets today</span>
+              </div>
+
+              <div class="pui-grid">
+                <div class="pui-item">
+                  <div class="pui-thumb"></div>
+                  <span>Avocado</span>
+                  <small>$6.49</small>
+                </div>
+                <div class="pui-item">
+                  <div class="pui-thumb"></div>
+                  <span>Whole Milk</span>
+                  <small>$3.49</small>
+                </div>
+                <div class="pui-item">
+                  <div class="pui-thumb"></div>
+                  <span>Sourdough</span>
+                  <small>$4.49</small>
+                </div>
+                <div class="pui-item">
+                  <div class="pui-thumb"></div>
+                  <span>Berries</span>
+                  <small>$4.99</small>
+                </div>
+              </div>
+
+              <div class="pui-cart">
+                <i class="fas fa-cart-shopping"></i>
+                <span>2 items · $12.48</span>
+                <i class="fas fa-arrow-right"></i>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="app-float af1">
+            <i class="fas fa-truck-fast"></i>
+            <div>Arriving in 12 min<small>Driver: Marco · 2.1 km away</small></div>
+          </div>
+
+          <div class="app-float af2">
+            <i class="fas fa-tags"></i>
+            <div>$10 off applied<small>First order bonus</small></div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<div id="footer-placeholder"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script>
+/* ================================================================
+   PRELOADER — animated progress ring + counter
+   ================================================================ */
+(function(){
+  const pre = document.getElementById('preloader');
+  if (!pre) return;
+
+  const fill = document.getElementById('preProgress');
+  const percent = document.getElementById('prePercent');
+  const radius = 70;
+  const circ = 2 * Math.PI * radius;
+
+  if (fill){
+    fill.style.strokeDasharray = circ;
+    fill.style.strokeDashoffset = circ;
+  }
+
+  let hidden = false;
+  function hide(){
+    if (hidden) return;
+    hidden = true;
+    pre.classList.add('hide');
+    setTimeout(() => { if (pre.parentNode) pre.parentNode.removeChild(pre); }, 900);
+  }
+
+  const duration = 1800;
+  const start = performance.now();
+
+  function tick(now){
+    const p = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - p, 3);
+    if (percent) percent.textContent = Math.round(p * 100) + '%';
+    if (fill) fill.style.strokeDashoffset = circ * (1 - eased);
+
+    if (p < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      setTimeout(hide, 420);
+    }
+  }
+  requestAnimationFrame(tick);
+
+  window.addEventListener('load', () => {
+    setTimeout(() => { if (pre.parentNode) hide(); }, 3200);
+  });
+})();
+
+/* ================================================================
+   AOS INIT
+   ================================================================ */
+AOS.init({
+  duration: 850,
+  easing: 'ease-out-cubic',
+  once: true,
+  offset: 60,
+  mirror: false,
+  disable: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+});
+
+/* ================================================================
+   SCROLL PROGRESS
+   ================================================================ */
+(function(){
+  const bar = document.getElementById('scrollProgress');
+
+  function onScroll(){
+    const h = document.documentElement;
+    const scrolled = h.scrollTop || document.body.scrollTop;
+    const height = h.scrollHeight - h.clientHeight;
+    const pct = height > 0 ? (scrolled / height) * 100 : 0;
+    bar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  onScroll();
+})();
+
+/* ================================================================
+   COUNT-UP STATS
+   ================================================================ */
+(function(){
+  const nums = document.querySelectorAll('[data-count]');
+  if (!nums.length) return;
+
+  function run(el){
+    const target = parseFloat(el.dataset.count);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1500;
+    const start = performance.now();
+
+    function frame(now){
+      const p = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const value = Math.round(target * eased);
+      el.textContent = value + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+      else el.textContent = target + suffix;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  if (!('IntersectionObserver' in window)) { nums.forEach(run); return; }
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting){
+        run(entry.target);
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold:0.5 });
+
+  nums.forEach(el => io.observe(el));
+})();
+
+/* ================================================================
+   TIMELINE FILL ON SCROLL
+   ================================================================ */
+(function(){
+  const tl = document.getElementById('timeline');
+  const fill = document.getElementById('tlFill');
+  if (!tl || !fill) return;
+
+  function update(){
+    const rect = tl.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const start = vh * 0.82;
+    const total = rect.height * 0.9 || 1;
+    let p = (start - rect.top) / total;
+    p = Math.max(0, Math.min(1, p));
+    fill.style.height = (p * 100) + '%';
+  }
+  window.addEventListener('scroll', update, { passive:true });
+  window.addEventListener('resize', update);
+  update();
+})();
+
+/* ================================================================
+   COUNTDOWN
+   ================================================================ */
+(function(){
+  const dEl = document.getElementById('cdDays');
+  const hEl = document.getElementById('cdHours');
+  const mEl = document.getElementById('cdMins');
+  const sEl = document.getElementById('cdSecs');
+  if (!dEl || !hEl || !mEl || !sEl) return;
+
+  const target = Date.now()
+    + (2 * 24 * 60 * 60 * 1000)
+    + (14 * 60 * 60 * 1000)
+    + (32 * 60 * 1000)
+    + (8 * 1000);
+
+  function tick(){
+    const diff = target - Date.now();
+    if (diff <= 0){
+      dEl.textContent = hEl.textContent = mEl.textContent = sEl.textContent = '00';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff / 3600000) % 24);
+    const m = Math.floor((diff / 60000) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+
+    dEl.textContent = String(d).padStart(2,'0');
+    hEl.textContent = String(h).padStart(2,'0');
+    mEl.textContent = String(m).padStart(2,'0');
+    sEl.textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+/* ================================================================
+   DEAL PROGRESS BAR
+   ================================================================ */
+(function(){
+  const bar = document.getElementById('dealBar');
+  if (!bar) return;
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting){
+        setTimeout(() => { bar.style.width = '73%'; }, 220);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold:0.4 });
+  io.observe(bar);
+})();
+
+/* ================================================================
+   ACCORDION
+   ================================================================ */
+(function(){
+  const items = document.querySelectorAll('#accordion .acc-item');
+
+  function closeAll(except){
+    items.forEach(item => {
+      if (item === except) return;
+      item.classList.remove('open');
+      const body = item.querySelector('.acc-body');
+      if (body) body.style.maxHeight = null;
+    });
+  }
+
+  items.forEach(item => {
+    const head = item.querySelector('.acc-head');
+    const body = item.querySelector('.acc-body');
+    if (!head || !body) return;
+
+    if (item.classList.contains('open')) {
+      body.style.maxHeight = body.scrollHeight + 'px';
+    }
+
+    head.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      if (isOpen){
+        item.classList.remove('open');
+        body.style.maxHeight = null;
+      } else {
+        closeAll(item);
+        item.classList.add('open');
+        body.style.maxHeight = body.scrollHeight + 'px';
+      }
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    const open = document.querySelector('#accordion .acc-item.open .acc-body');
+    if (open) open.style.maxHeight = open.scrollHeight + 'px';
+  });
+})();
+
+/* ================================================================
+   PRODUCT RAIL ARROWS
+   ================================================================ */
+(function(){
+  const rail = document.getElementById('productRail');
+  const prev = document.querySelector('.rail-prev');
+  const next = document.querySelector('.rail-next');
+  if (!rail || !prev || !next) return;
+
+  const step = () => {
+    const card = rail.querySelector('.pcard');
+    const gap = 18;
+    return card ? card.offsetWidth + gap : 280;
+  };
+
+  prev.addEventListener('click', () => rail.scrollBy({ left:-step(), behavior:'smooth' }));
+  next.addEventListener('click', () => rail.scrollBy({ left: step(), behavior:'smooth' }));
+})();
+
+/* ================================================================
+   NEWSLETTER FORM → 404.html
+   ================================================================ */
+(function(){
+  const form = document.getElementById('newsForm');
+  const input = document.getElementById('newsEmail');
+  const msg = document.getElementById('newsMsg');
+  if (!form || !input || !msg) return;
+
+  const isValid = (v) => /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(v);
+
+  function showError(text){
+    msg.textContent = text;
+    msg.classList.add('show');
+    input.classList.add('error');
+    input.focus();
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const value = (input.value || '').trim();
+    msg.classList.remove('show');
+    input.classList.remove('error');
+
+    if (!value) return showError('Please enter your email address.');
+    if (!isValid(value)) return showError('Please enter a valid email address.');
+
+    window.location.href = '404.html';
+  });
+
+  input.addEventListener('input', () => {
+    if (input.value.trim()){
+      input.classList.remove('error');
+      msg.classList.remove('show');
+    }
+  });
+})();
+
+/* ================================================================
+   LOAD HEADER + FOOTER
+   ================================================================ */
+document.addEventListener('DOMContentLoaded', function(){
+
+  fetch('header.html')
+    .then(r => r.ok ? r.text() : Promise.reject('Header not found'))
+    .then(html => {
+      document.getElementById('header-placeholder').innerHTML = html;
+      initHeader();
+    })
+    .catch(err => console.warn('Header not loaded:', err));
+
+  fetch('footer.html')
+    .then(r => r.ok ? r.text() : Promise.reject('Footer not found'))
+    .then(html => {
+      document.getElementById('footer-placeholder').innerHTML = html;
+      initFooter();
+    })
+    .catch(err => console.warn('Footer not loaded:', err));
+});
+
+function initHeader(){
+  const hamburger = document.getElementById('hamburgerBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  if (!hamburger || !mobileMenu) return;
+
+  function toggleMenu(){
+    hamburger.classList.toggle('active');
+    mobileMenu.classList.toggle('active');
+    document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+  }
+  function closeMenu(){
+    hamburger.classList.remove('active');
+    mobileMenu.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', toggleMenu);
+
+  document.addEventListener('click', (e) => {
+    if (mobileMenu.classList.contains('active') &&
+        !hamburger.contains(e.target) &&
+        !mobileMenu.contains(e.target)){
+      closeMenu();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeMenu(); });
+
+  document.querySelectorAll('.mobile-nav-link, .mobile-action-link')
+    .forEach(link => link.addEventListener('click', closeMenu));
+}
+
+function initFooter(){
+  const isValid = (email) => /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/.test(email);
+
+  function bind(btnId, inputId, errId){
+    const btn = document.getElementById(btnId);
+    const input = document.getElementById(inputId);
+    const err = document.getElementById(errId);
+    if (!btn || !input || !err) return;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const email = input.value.trim();
+      if (!email){
+        err.textContent = 'Please enter your email address';
+        err.classList.add('show');
+        input.classList.add('error');
+      } else if (!isValid(email)){
+        err.textContent = 'Please enter a valid email address';
+        err.classList.add('show');
+        input.classList.add('error');
+      } else {
+        window.location.href = '404.html';
+      }
+    });
+
+    input.addEventListener('input', () => {
+      if (input.value.trim()){
+        err.classList.remove('show');
+        input.classList.remove('error');
+      }
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter'){ e.preventDefault(); btn.click(); }
+    });
+  }
+
+  bind('footerSubscribeBtn', 'footerEmail', 'footerEmailError');
+  bind('mobileFooterSubscribeBtn', 'mobileFooterEmail', 'mobileFooterEmailError');
+}
+
+console.log('%c🛒 Stackly — landing page ready', 'color:#2E7D32;font-size:15px;font-weight:bold;');
+</script>
+
+</body>
+</html>

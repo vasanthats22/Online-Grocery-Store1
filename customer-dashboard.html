@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Online Grocery Store - Customer Dashboard</title>
+
+<!-- ============================================================
+     AUTH GUARD — runs synchronously BEFORE body renders.
+     ✅ authenticated = true · expiresAt > now · role = customer
+     ❌ invalid → redirect to login.html
+     ============================================================ -->
+<script>
+(function guardCustomerDashboard() {
+  console.log('%c[AUTH] Guard running...', 'color:#FF9800;font-weight:bold');
+
+  let raw = null;
+  try {
+    raw = sessionStorage.getItem('grocery_session') || localStorage.getItem('grocery_session');
+    console.log('[AUTH] Raw session data:', raw);
+  } catch (e) {
+    console.warn('[AUTH] Storage blocked:', e);
+  }
+
+  let session = null;
+  try {
+    session = raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.warn('[AUTH] JSON parse failed:', e);
+  }
+
+  console.log('[AUTH] Parsed session:', session);
+
+  const isValid = session &&
+                  session.authenticated === true &&
+                  typeof session.expiresAt === 'number' &&
+                  session.expiresAt > Date.now() &&
+                  session.role === 'customer';
+
+  console.log('[AUTH] Is valid?', isValid);
+  if (session) {
+    console.log('[AUTH] Check breakdown:', {
+      authenticated: session.authenticated === true,
+      expiresAt_is_number: typeof session.expiresAt === 'number',
+      not_expired: session.expiresAt > Date.now(),
+      role_is_customer: session.role === 'customer'
+    });
+  }
+
+  if (!isValid) {
+    console.log('%c[AUTH] ❌ Invalid — redirecting to login.html', 'color:#dc2626;font-weight:bold');
+    try {
+      sessionStorage.removeItem('grocery_session');
+      localStorage.removeItem('grocery_session');
+    } catch (_) {}
+    window.location.replace('login.html');
+    return;
+  }
+
+  console.log('%c[AUTH] ✅ Valid — showing dashboard', 'color:#16a34a;font-weight:bold');
+  window.__GROCERY_USER__ = session;
+})();
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* ===== RESET ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { max-width: 100vw; overflow-x: hidden !important; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #F1F8E9;
+    height: 100vh;
+    overflow: hidden;
+    color: #1B3A1F;
+    font-size: 14px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #F1F8E9; }
+  ::-webkit-scrollbar-thumb { background: #2E7D32; border-radius: 10px; }
+
+  /* ===== APP SHELL ===== */
+  .app {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%);
+    display: flex;
+    flex-direction: column;
+    border-right: 3px solid #FF9800;
+    box-shadow: 4px 0 24px rgba(46, 125, 50, 0.20);
+    overflow: hidden;
+    z-index: 20;
+  }
+  .sidebar-logo {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    padding: 0 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+  }
+  .sidebar-logo img {
+    height: 46px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+  .sidebar-nav {
+    flex: 1;
+    padding: 14px 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-nav::-webkit-scrollbar { width: 3px; }
+  .sidebar-nav::-webkit-scrollbar-thumb { background: #FF9800; border-radius: 10px; }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    color: #F1F8E9;
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+  }
+  .nav-link i { width: 18px; font-size: 0.85rem; color: #A5D6A7; text-align: center; transition: 0.25s; }
+  .nav-link:hover { background: rgba(255, 152, 0, 0.18); color: #ffffff; border-left-color: #FF9800; }
+  .nav-link:hover i { color: #FFB74D; }
+  .nav-link.active {
+    background: linear-gradient(135deg, #FF9800, #FB8C00);
+    color: #ffffff;
+    border-left-color: #FFB74D;
+    box-shadow: 0 4px 14px rgba(255, 152, 0, 0.5);
+  }
+  .nav-link.active i { color: #ffffff; }
+
+  .nav-divider { height: 1px; background: rgba(255, 255, 255, 0.15); margin: 10px 4px; }
+
+  .nav-link.logout { color: #fca5a5; }
+  .nav-link.logout i { color: #fca5a5; }
+  .nav-link.logout:hover { background: rgba(239, 68, 68, 0.15); color: #fee2e2; }
+
+  .sidebar-footer {
+    padding: 16px;
+    flex-shrink: 0;
+  }
+  .user-badge {
+    background: #1B5E20;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+    border-radius: 14px;
+    padding: 12px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .user-badge .icon-circle {
+    width: 30px; height: 30px;
+    background: rgba(255, 152, 0, 0.22);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #FFB74D;
+    font-size: 0.8rem;
+    margin-bottom: 6px;
+  }
+  .user-badge .role { font-size: 0.68rem; font-weight: 700; color: #ffffff; }
+  .user-badge .name { font-size: 0.62rem; color: #A5D6A7; margin: 2px 0 8px; word-break: break-word; }
+  .user-badge .status {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #2E7D32;
+    border: 1px solid rgba(255, 152, 0, 0.4);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: #4ade80;
+  }
+  .user-badge .status::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+  }
+  .sidebar-copy {
+    text-align: center;
+    font-size: 0.55rem;
+    color: rgba(165, 214, 167, 0.75);
+    margin-top: 10px;
+  }
+
+  /* ===== MAIN WRAPPER ===== */
+  .main-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .main-header {
+    background: #ffffff;
+    border-bottom: 1px solid #E8F5E9;
+    padding: 0 24px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-shrink: 0;
+    z-index: 10;
+    position: relative;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .mobile-logo { display: none; }
+  .mobile-logo img { height: 42px; width: auto; }
+  .header-title h1 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1B3A1F;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .header-title p {
+    font-size: 0.72rem;
+    color: #4a5a4a;
+    margin-top: 2px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .date-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: #F1F8E9;
+    border: 1px solid #E8F5E9;
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #1B3A1F;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .date-pill:hover { background: #E8F5E9; }
+  .date-pill i { color: #FF9800; }
+
+  .bell-btn {
+    position: relative;
+    cursor: pointer;
+    color: #1B3A1F;
+    font-size: 1.1rem;
+    transition: 0.2s;
+    background: transparent;
+    border: none;
+    padding: 4px;
+  }
+  .bell-btn:hover { color: #FF9800; }
+  .bell-badge {
+    position: absolute;
+    top: -2px; right: -4px;
+    background: #FF9800;
+    color: #ffffff;
+    font-size: 0.55rem;
+    font-weight: 800;
+    width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+
+  .user-block {
+    display: flex; align-items: center; gap: 12px;
+    padding-left: 16px;
+    border-left: 1px solid #E8F5E9;
+  }
+  .user-text { text-align: right; }
+  .user-text .name { font-size: 0.75rem; font-weight: 800; color: #1B3A1F; }
+  .user-text .role { font-size: 0.58rem; color: #4a5a4a; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+  .user-avatar {
+    position: relative;
+    width: 36px; height: 36px;
+    background: #FF9800;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+  .user-avatar:hover { background: #FB8C00; }
+
+  .profile-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #fff;
+    border: 1px solid #E8F5E9;
+    border-radius: 12px;
+    box-shadow: 0 12px 40px rgba(46, 125, 50, 0.18);
+    width: 170px;
+    padding: 6px 0;
+    z-index: 9999;
+  }
+  .profile-menu.show { display: block; }
+  .profile-menu a {
+    display: block;
+    padding: 9px 16px;
+    font-size: 0.78rem;
+    color: #374151;
+    text-decoration: none;
+    transition: 0.2s;
+    font-weight: 500;
+  }
+  .profile-menu a i { color: #2E7D32; margin-right: 8px; width: 14px; }
+  .profile-menu a:hover { background: #F1F8E9; color: #1B3A1F; }
+  .profile-menu hr { border: none; border-top: 1px solid #E8F5E9; margin: 4px 0; }
+  .profile-menu a.danger { color: #dc2626; }
+  .profile-menu a.danger i { color: #dc2626; }
+  .profile-menu a.danger:hover { background: #fef2f2; }
+
+  .notif-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #E8F5E9;
+    border-top: 3px solid #FF9800;
+    box-shadow: 0 20px 60px rgba(46, 125, 50, 0.22);
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    padding: 6px 0;
+    max-height: 420px;
+    overflow-y: auto;
+    z-index: 9999;
+  }
+  .notif-dropdown.show { display: block; }
+  .notif-head {
+    padding: 12px 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #E8F5E9;
+    position: sticky; top: 0; background: #fff;
+    font-weight: 800; font-size: 0.85rem; color: #1B3A1F;
+  }
+  .notif-head .badge {
+    background: #FF9800; color: #fff;
+    font-size: 0.6rem; font-weight: 800;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .notif-item {
+    padding: 12px 18px;
+    display: flex; gap: 12px;
+    border-bottom: 1px solid #F1F8E9;
+  }
+  .notif-item:last-of-type { border-bottom: none; }
+  .notif-item .ni-icon {
+    width: 38px; height: 38px; flex-shrink: 0;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+  }
+  .notif-item .ni-body { flex: 1; min-width: 0; }
+  .notif-item .ni-title { font-size: 0.78rem; font-weight: 700; color: #1B3A1F; }
+  .notif-item .ni-desc { font-size: 0.7rem; color: #4a5a4a; margin-top: 2px; word-wrap: break-word; }
+  .notif-item .ni-time { font-size: 0.6rem; color: #9aab9a; margin-top: 3px; }
+  .notif-footer {
+    display: block;
+    padding: 11px;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #FF9800;
+    font-weight: 700;
+    text-decoration: none;
+    border-top: 1px solid #E8F5E9;
+    position: sticky; bottom: 0;
+    background: #fff;
+  }
+  .notif-footer:hover { background: #F1F8E9; color: #FB8C00; }
+
+  .mobile-nav {
+    display: none;
+    background: linear-gradient(180deg, #2E7D32 0%, #1B5E20 100%);
+    border-bottom: 3px solid #FF9800;
+    padding: 10px 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .mobile-nav::-webkit-scrollbar { display: none; }
+  .mobile-nav .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #F1F8E9;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.25s;
+    font-family: inherit;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .mobile-nav .nav-btn i { color: #A5D6A7; font-size: 0.8rem; }
+  .mobile-nav .nav-btn:hover { background: rgba(255, 152, 0, 0.18); color: #fff; }
+  .mobile-nav .nav-btn.active {
+    background: linear-gradient(135deg, #FF9800, #FB8C00);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.5);
+  }
+  .mobile-nav .nav-btn.active i { color: #ffffff; }
+  .mobile-nav .nav-btn.logout { color: #fca5a5; }
+  .mobile-nav .nav-btn.logout i { color: #fca5a5; }
+
+  .dash-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
+    background: #F1F8E9;
+  }
+  .page-title-block { display: none; }
+  .page-title-block h1 { font-size: 1.05rem; font-weight: 800; color: #1B3A1F; }
+  .page-title-block p { font-size: 0.72rem; color: #4a5a4a; margin-top: 2px; }
+
+  .content-section { display: none; }
+  .content-section.active { display: block; }
+
+  .card {
+    background: #fff;
+    border: 1px solid rgba(46, 125, 50, 0.10);
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(46, 125, 50, 0.05);
+    padding: 16px;
+    transition: 0.3s ease;
+    min-width: 0;
+  }
+  .card:hover {
+    box-shadow: 0 8px 24px rgba(46, 125, 50, 0.14);
+    border-color: rgba(255, 152, 0, 0.35);
+  }
+  .card-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #1B3A1F;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .card-title i { color: #2E7D32; }
+  .card-title .head-right {
+    margin-left: auto;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #FF9800;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .card-title .head-right:hover { text-decoration: underline; color: #FB8C00; }
+  .card-title .head-pill {
+    margin-left: auto;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: #4a5a4a;
+    background: #F1F8E9;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .two-col-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 14px;
+    margin-bottom: 20px;
+    align-items: start;
+  }
+  .right-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .stat-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  .stat-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
+  .stat-top .trend {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #16a34a;
+  }
+  .stat-top .trend.soft { color: #4a5a4a; }
+  .stat-label {
+    font-size: 0.62rem;
+    color: #4a5a4a;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1B3A1F;
+    line-height: 1;
+  }
+  .stat-value small {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #4a5a4a;
+    margin-left: 2px;
+  }
+
+  .chart-wrap { height: 130px; width: 100%; }
+
+  .pickup-item {
+    background: #F1F8E9;
+    border: 1px solid #E8F5E9;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .pickup-item:last-child { margin-bottom: 0; }
+  .pickup-item .pi-body { min-width: 0; flex: 1; }
+  .pickup-item .pi-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #1B3A1F;
+    margin-bottom: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pickup-item .pi-meta {
+    font-size: 0.68rem;
+    color: #4a5a4a;
+    margin-bottom: 2px;
+  }
+  .pickup-item .pi-date {
+    font-size: 0.65rem;
+    color: #9aab9a;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .pill.delivered  { background: rgba(76, 175, 80, 0.16);  color: #1f5a2e; }
+  .pill.out        { background: rgba(255, 152, 0, 0.18);  color: #8a5a00; }
+  .pill.preparing  { background: rgba(46, 125, 50, 0.12);  color: #1B5E20; }
+  .pill.confirmed  { background: rgba(46, 125, 50, 0.10);  color: #2E7D32; }
+  .pill.cancelled  { background: rgba(220, 38, 38, 0.14);  color: #b91c1c; }
+
+  .prog-bg {
+    background: #E8F5E9;
+    height: 7px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .prog-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #FF9800, #FB8C00);
+    transition: width 0.6s ease;
+  }
+  .goal-text {
+    font-size: 0.7rem;
+    color: #4a5a4a;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .goal-text strong { color: #1B3A1F; }
+  .goal-hint {
+    font-size: 0.68rem;
+    color: #4a5a4a;
+    line-height: 1.5;
+  }
+  .goal-hint strong { color: #2E7D32; }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .quick-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 11px 10px;
+    border-radius: 10px;
+    background: #F1F8E9;
+    border: 1px solid #E8F5E9;
+    color: #1B3A1F;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    transition: 0.25s ease;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .quick-btn i {
+    color: #FF9800;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+    transition: 0.25s;
+  }
+  .quick-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .quick-btn:hover {
+    background: #2E7D32;
+    color: #ffffff;
+    border-color: #2E7D32;
+    transform: translateY(-2px);
+  }
+  .quick-btn:hover i { color: #FFB74D; }
+
+  .table-wrap { overflow-x: auto; }
+  table.activity {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+  }
+  table.activity th {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #4a5a4a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #E8F5E9;
+    white-space: nowrap;
+  }
+  table.activity td {
+    padding: 10px;
+    border-bottom: 1px solid #F1F8E9;
+    color: #374151;
+  }
+  table.activity tr:hover td { background: #F8FCF8; }
+  table.activity tr:last-child td { border-bottom: none; }
+  table.activity td.strong { font-weight: 700; color: #1B3A1F; }
+  table.activity td.pts { font-weight: 700; color: #16a34a; }
+
+  .mat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+  .mat-fruits   { background: rgba(255, 152, 0, 0.16);  color: #8a5a00; }
+  .mat-veggies  { background: rgba(76, 175, 80, 0.16);  color: #2e7d32; }
+  .mat-dairy    { background: rgba(255, 193, 7, 0.22);  color: #8a6d00; }
+  .mat-bakery   { background: rgba(141, 110, 99, 0.18); color: #4e342e; }
+  .mat-meat     { background: rgba(229, 57, 53, 0.14);  color: #b71c1c; }
+  .mat-beverage { background: rgba(38, 166, 154, 0.16); color: #00695c; }
+
+  .rewards-balance {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    border-radius: 14px;
+    padding: 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .rewards-balance::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 140px; height: 140px;
+    background: rgba(255, 152, 0, 0.25);
+    border-radius: 50%;
+  }
+  .rewards-balance .label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; opacity: 0.9; }
+  .rewards-balance .amount { font-size: 2rem; font-weight: 800; margin: 6px 0 4px; }
+  .rewards-balance .amount small { font-size: 0.85rem; font-weight: 700; opacity: 0.8; }
+  .rewards-balance .sub { font-size: 0.7rem; opacity: 0.9; }
+
+  .rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .reward-card {
+    background: #F1F8E9;
+    border: 1px solid #E8F5E9;
+    border-radius: 12px;
+    padding: 18px 12px;
+    text-align: center;
+  }
+  .reward-card .r-icon {
+    width: 46px; height: 46px;
+    background: rgba(255, 152, 0, 0.18);
+    color: #FF9800;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.05rem;
+    margin-bottom: 10px;
+  }
+  .reward-card .r-title { font-size: 0.8rem; font-weight: 800; color: #1B3A1F; margin-bottom: 4px; }
+  .reward-card .r-pts { font-size: 0.7rem; color: #4a5a4a; margin-bottom: 10px; }
+  .reward-card .r-btn {
+    display: inline-block;
+    background: #FF9800;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: 0.25s;
+  }
+  .reward-card .r-btn:hover { background: #FB8C00; }
+
+  .wishlist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .wish-card {
+    background: #F1F8E9;
+    border: 1px solid #E8F5E9;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: 0.25s;
+  }
+  .wish-card:hover { border-color: #FF9800; transform: translateY(-3px); }
+  .wish-card .w-icon {
+    width: 52px; height: 52px;
+    background: #fff;
+    color: #2E7D32;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.12);
+  }
+  .wish-card .w-title { font-size: 0.8rem; font-weight: 800; color: #1B3A1F; margin-bottom: 3px; }
+  .wish-card .w-price { font-size: 0.75rem; color: #FF9800; font-weight: 800; margin-bottom: 10px; }
+  .wish-card .w-btn {
+    display: inline-block;
+    background: #2E7D32;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: 0.25s;
+  }
+  .wish-card .w-btn:hover { background: #1B5E20; }
+
+  @media (max-width: 1023px) {
+    .sidebar { display: none; }
+    .mobile-nav { display: flex; }
+    .mobile-logo { display: block; }
+    .header-title { display: none; }
+    .page-title-block { display: block; margin-bottom: 16px; }
+    .main-header { height: 66px; padding: 0 16px; }
+    .date-pill { display: none; }
+    .user-text { display: none; }
+    .user-block { padding-left: 12px; }
+  }
+
+  @media (max-width: 900px) {
+    .two-col-grid { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .charts-grid { grid-template-columns: 1fr; gap: 10px; }
+    .two-col-grid { gap: 10px; }
+    .right-stack { gap: 10px; }
+    .chart-wrap { height: 150px; }
+    .dash-body { padding: 14px; }
+    .card { padding: 14px; }
+    .stat-value { font-size: 1.15rem; }
+    .main-header { padding: 0 12px; height: 62px; }
+    .mobile-nav { padding: 8px 12px; }
+    .mobile-nav .nav-btn { padding: 7px 14px; font-size: 0.7rem; }
+
+    table.activity thead { display: none; }
+    table.activity, table.activity tbody, table.activity tr, table.activity td {
+      display: block;
+      width: 100%;
+    }
+    table.activity tr {
+      padding: 10px 0;
+      border-bottom: 1px solid #E8F5E9;
+    }
+    table.activity tr:last-child { border-bottom: none; }
+    table.activity td {
+      padding: 3px 0;
+      border: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+    }
+    table.activity td::before {
+      content: attr(data-label);
+      font-size: 0.6rem;
+      font-weight: 700;
+      color: #4a5a4a;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-right: 10px;
+    }
+
+    .notif-dropdown { width: calc(100vw - 24px); right: -60px; }
+    .profile-menu { right: 0; }
+  }
+
+  @media (max-width: 380px) {
+    .quick-btn { font-size: 0.66rem; padding: 10px 6px; }
+    .quick-btn i { font-size: 0.72rem; }
+    .quick-grid { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <a href="index.html">
+        <img src="logoo3.webp" alt="Online Grocery Store"
+             onerror="this.outerHTML='<span style=&quot;color:#FFB74D;font-weight:800;font-size:1rem;&quot;><i class=&quot;fa-solid fa-basket-shopping&quot;></i> FreshGrocer</span>';">
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-link active" data-page="dashboard"><i class="fa-solid fa-border-all"></i><span>Dashboard</span></a>
+      <a class="nav-link" data-page="orders"><i class="fa-solid fa-bag-shopping"></i><span>My Orders</span></a>
+      <a class="nav-link" data-page="history"><i class="fa-solid fa-clock-rotate-left"></i><span>Order History</span></a>
+      <a class="nav-link" data-page="wishlist"><i class="fa-solid fa-heart"></i><span>Wishlist</span></a>
+      <a class="nav-link" data-page="rewards"><i class="fa-solid fa-gift"></i><span>Rewards</span></a>
+
+      <div class="nav-divider"></div>
+
+      <a class="nav-link logout" href="login.html" onclick="handleLogout(event)"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-badge">
+        <div class="icon-circle"><i class="fa-solid fa-basket-shopping"></i></div>
+        <div class="role">Customer</div>
+        <div class="name" id="sidebarUserName">FreshGrocer Member</div>
+        <div class="status">Fresh shopper</div>
+      </div>
+      <div class="sidebar-copy">© 2026 Online Grocery Store</div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main-wrapper">
+
+    <!-- HEADER -->
+    <header class="main-header">
+      <div class="header-left">
+        <div class="mobile-logo">
+          <a href="index.html">
+            <img src="logoo3.webp" alt="Grocery"
+                 onerror="this.style.display='none';">
+          </a>
+        </div>
+        <div class="header-title">
+          <h1 id="pageTitle">Customer Dashboard</h1>
+          <p id="pageSubtitle">Track your orders and savings.</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="date-pill" id="datePill">
+          <i class="fa-regular fa-calendar"></i>
+          <span id="dateText">Today, Oct 14 2026</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:0.6rem;"></i>
+        </div>
+
+        <div style="position: relative;">
+          <button class="bell-btn" id="bellBtn" aria-label="Notifications">
+            <i class="fa-regular fa-bell"></i>
+            <span class="bell-badge">4</span>
+          </button>
+
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-head">
+              <span>Notifications</span>
+              <span class="badge">4 new</span>
+            </div>
+            <div class="notif-item">
+              <div class="ni-icon" style="background:rgba(255,152,0,0.2);color:#FF9800;"><i class="fa-solid fa-truck-fast"></i></div>
+              <div class="ni-body">
+                <div class="ni-title">Order Out for Delivery</div>
+                <div class="ni-desc">Order #GR-1042 arrives today 4–6 PM</div>
+                <div class="ni-time">10 min ago</div>
+              </div>
+            </div>
+            <div class="notif-item">
+              <div class="ni-icon" style="background:#dcfce7;color:#16a34a;"><i class="fa-solid fa-check"></i></div>
+              <div class="ni-body">
+                <div class="ni-title">Order Delivered</div>
+                <div class="ni-desc">Order #GR-1041 delivered successfully</div>
+                <div class="ni-time">2 hours ago</div>
+              </div>
+            </div>
+            <div class="notif-item">
+              <div class="ni-icon" style="background:rgba(255,152,0,0.2);color:#FF9800;"><i class="fa-solid fa-star"></i></div>
+              <div class="ni-body">
+                <div class="ni-title">Loyalty Points Earned</div>
+                <div class="ni-desc">+68 points on your last order</div>
+                <div class="ni-time">3 hours ago</div>
+              </div>
+            </div>
+            <div class="notif-item">
+              <div class="ni-icon" style="background:rgba(165,214,167,0.4);color:#2E7D32;"><i class="fa-solid fa-tags"></i></div>
+              <div class="ni-body">
+                <div class="ni-title">Fresh Deal Alert</div>
+                <div class="ni-desc">30% off on organic fruits this week 🍓</div>
+                <div class="ni-time">Yesterday</div>
+              </div>
+            </div>
+            <a href="404.html" class="notif-footer">View all notifications →</a>
+          </div>
+        </div>
+
+        <div class="user-block">
+          <div class="user-text">
+            <div class="name" id="headerUserName">Customer</div>
+            <div class="role">Customer</div>
+          </div>
+          <div class="user-avatar" id="profileBtn">
+            <span id="avatarInitials">C</span>
+            <div class="profile-menu" id="profileMenu">
+              <a href="404.html"><i class="fa-regular fa-user"></i>Profile</a>
+              <a href="404.html"><i class="fa-solid fa-gear"></i>Settings</a>
+              <hr>
+              <a href="login.html" class="danger" onclick="handleLogout(event)"><i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav">
+      <a class="nav-btn active" data-page="dashboard"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+      <a class="nav-btn" data-page="orders"><i class="fa-solid fa-bag-shopping"></i> Orders</a>
+      <a class="nav-btn" data-page="history"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+      <a class="nav-btn" data-page="wishlist"><i class="fa-solid fa-heart"></i> Wishlist</a>
+      <a class="nav-btn" data-page="rewards"><i class="fa-solid fa-gift"></i> Rewards</a>
+      <a class="nav-btn logout" href="login.html" onclick="handleLogout(event)"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </div>
+
+    <!-- DASHBOARD BODY -->
+    <div class="dash-body">
+
+      <div class="page-title-block">
+        <h1 id="pageTitleMobile">Customer Dashboard</h1>
+        <p id="pageSubtitleMobile">Track your orders and savings.</p>
+      </div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <div id="section-dashboard" class="content-section active">
+
+        <div class="stats-grid">
+          <div class="card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(46,125,50,0.15);color:#2E7D32;"><i class="fa-solid fa-bag-shopping"></i></div>
+              <span class="trend"><i class="fa-solid fa-arrow-up"></i> +8%</span>
+            </div>
+            <div class="stat-label">Total Orders</div>
+            <div class="stat-value">42<small>orders</small></div>
+          </div>
+          <div class="card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(255,152,0,0.18);color:#FF9800;"><i class="fa-solid fa-dollar-sign"></i></div>
+              <span class="trend soft">this month</span>
+            </div>
+            <div class="stat-label">Monthly Spend</div>
+            <div class="stat-value">$342<small>.50</small></div>
+          </div>
+          <div class="card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(76,175,80,0.15);color:#43A047;"><i class="fa-solid fa-tags"></i></div>
+              <span class="trend"><i class="fa-solid fa-arrow-up"></i> +12%</span>
+            </div>
+            <div class="stat-label">Money Saved</div>
+            <div class="stat-value">$284<small>.20</small></div>
+          </div>
+          <div class="card">
+            <div class="stat-top">
+              <div class="stat-icon" style="background:rgba(255,152,0,0.2);color:#FF9800;"><i class="fa-solid fa-star"></i></div>
+              <span class="trend soft">+68 pts</span>
+            </div>
+            <div class="stat-label">Loyalty Points</div>
+            <div class="stat-value">1,240</div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="card">
+            <div class="card-title">
+              📈 Monthly Spending
+              <span class="head-pill">6 months</span>
+            </div>
+            <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">
+              🥧 Category Breakdown
+              <span class="head-pill">By type</span>
+            </div>
+            <div class="chart-wrap"><canvas id="materialChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">
+              📊 Weekly Orders
+              <span class="head-pill">Last 6 weeks</span>
+            </div>
+            <div class="chart-wrap"><canvas id="co2Chart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="two-col-grid">
+          <div class="card">
+            <div class="card-title">
+              🚚 Upcoming Deliveries
+              <a href="404.html" class="head-right">View All</a>
+            </div>
+
+            <div class="pickup-item">
+              <div class="pi-body">
+                <div class="pi-title">🍓 Fresh Fruits & Veggies</div>
+                <div class="pi-meta">Order #GR-1042 · 8 items · $42.50</div>
+                <div class="pi-date">Today, 4:00 PM – 6:00 PM</div>
+              </div>
+              <span class="pill out">Out</span>
+            </div>
+
+            <div class="pickup-item">
+              <div class="pi-body">
+                <div class="pi-title">🥛 Dairy & Bakery</div>
+                <div class="pi-meta">Order #GR-1043 · 5 items · $28.90</div>
+                <div class="pi-date">Tomorrow, 10:00 AM – 12:00 PM</div>
+              </div>
+              <span class="pill preparing">Preparing</span>
+            </div>
+
+            <div class="pickup-item">
+              <div class="pi-body">
+                <div class="pi-title">🛒 Weekly Essentials</div>
+                <div class="pi-meta">Order #GR-1044 · 14 items · $85.60</div>
+                <div class="pi-date">Oct 18, 2026 · 6:00 PM – 8:00 PM</div>
+              </div>
+              <span class="pill confirmed">Confirmed</span>
+            </div>
+          </div>
+
+          <div class="right-stack">
+            <div class="card">
+              <div class="card-title">🎯 Monthly Savings Goal</div>
+              <div class="goal-text"><strong>$68</strong> / $100 saved via offers</div>
+              <div class="prog-bg"><div class="prog-fill" style="width:68%;"></div></div>
+              <div class="goal-hint">$32 more to unlock <strong>Smart Saver</strong> badge 🏅</div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">⚡ Quick Actions</div>
+              <div class="quick-grid">
+                <a href="404.html" class="quick-btn">
+                  <i class="fa-solid fa-basket-shopping"></i><span>Shop Now</span>
+                </a>
+                <a href="404.html" class="quick-btn">
+                  <i class="fa-solid fa-truck-fast"></i><span>Track Order</span>
+                </a>
+                <a href="404.html" class="quick-btn">
+                  <i class="fa-solid fa-rotate-right"></i><span>Reorder</span>
+                </a>
+                <a href="404.html" class="quick-btn">
+                  <i class="fa-solid fa-headset"></i><span>Support</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            📋 Recent Orders
+            <a href="404.html" class="head-right">View All</a>
+          </div>
+          <div class="table-wrap">
+            <table class="activity">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Total</th>
+                  <th>Points</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="Order" class="strong">#GR-1041</td>
+                  <td data-label="Date">10 Oct 2026</td>
+                  <td data-label="Category"><span class="mat-chip mat-veggies"><i class="fa-solid fa-carrot"></i> Veggies</span></td>
+                  <td data-label="Total" class="strong">$68.20</td>
+                  <td data-label="Points" class="pts">+68</td>
+                  <td data-label="Status"><span class="pill delivered">Delivered</span></td>
+                </tr>
+                <tr>
+                  <td data-label="Order" class="strong">#GR-1040</td>
+                  <td data-label="Date">07 Oct 2026</td>
+                  <td data-label="Category"><span class="mat-chip mat-fruits"><i class="fa-solid fa-apple-whole"></i> Fruits</span></td>
+                  <td data-label="Total" class="strong">$34.80</td>
+                  <td data-label="Points" class="pts">+35</td>
+                  <td data-label="Status"><span class="pill delivered">Delivered</span></td>
+                </tr>
+                <tr>
+                  <td data-label="Order" class="strong">#GR-1039</td>
+                  <td data-label="Date">03 Oct 2026</td>
+                  <td data-label="Category"><span class="mat-chip mat-dairy"><i class="fa-solid fa-cow"></i> Dairy</span></td>
+                  <td data-label="Total" class="strong">$28.40</td>
+                  <td data-label="Points" class="pts">+28</td>
+                  <td data-label="Status"><span class="pill delivered">Delivered</span></td>
+                </tr>
+                <tr>
+                  <td data-label="Order" class="strong">#GR-1038</td>
+                  <td data-label="Date">28 Sep 2026</td>
+                  <td data-label="Category"><span class="mat-chip mat-bakery"><i class="fa-solid fa-bread-slice"></i> Bakery</span></td>
+                  <td data-label="Total" class="strong">$22.10</td>
+                  <td data-label="Points" class="pts">+22</td>
+                  <td data-label="Status"><span class="pill delivered">Delivered</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ MY ORDERS ============ -->
+      <div id="section-orders" class="content-section">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-bag-shopping"></i> My Orders</div>
+
+          <div class="pickup-item">
+            <div class="pi-body">
+              <div class="pi-title">🍓 Fresh Fruits & Veggies</div>
+              <div class="pi-meta">Order #GR-1042 · 8 items · $42.50</div>
+              <div class="pi-date">Delivery today, 4:00 PM – 6:00 PM</div>
+            </div>
+            <span class="pill out">Out</span>
+          </div>
+
+          <div class="pickup-item">
+            <div class="pi-body">
+              <div class="pi-title">🥛 Dairy & Bakery</div>
+              <div class="pi-meta">Order #GR-1043 · 5 items · $28.90</div>
+              <div class="pi-date">Delivery tomorrow, 10:00 AM – 12:00 PM</div>
+            </div>
+            <span class="pill preparing">Preparing</span>
+          </div>
+
+          <div class="pickup-item">
+            <div class="pi-body">
+              <div class="pi-title">🛒 Weekly Essentials</div>
+              <div class="pi-meta">Order #GR-1044 · 14 items · $85.60</div>
+              <div class="pi-date">Delivery Oct 18, 2026 · 6:00 PM – 8:00 PM</div>
+            </div>
+            <span class="pill confirmed">Confirmed</span>
+          </div>
+
+          <a href="404.html" style="display:inline-block;margin-top:14px;background:#FF9800;color:#fff;font-weight:700;font-size:0.75rem;padding:9px 20px;border-radius:8px;text-decoration:none;">
+            <i class="fa-solid fa-basket-shopping" style="margin-right:5px;"></i> Start New Order
+          </a>
+        </div>
+      </div>
+
+      <!-- ============ ORDER HISTORY ============ -->
+      <div id="section-history" class="content-section">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Order History</div>
+          <div class="table-wrap">
+            <table class="activity">
+              <thead>
+                <tr>
+                  <th>Order</th>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Total</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td data-label="Order" class="strong">#GR-1041</td><td data-label="Date">10 Oct 2026</td><td data-label="Category"><span class="mat-chip mat-veggies">Veggies</span></td><td data-label="Total" class="strong">$68.20</td><td data-label="Points" class="pts">+68</td></tr>
+                <tr><td data-label="Order" class="strong">#GR-1040</td><td data-label="Date">07 Oct 2026</td><td data-label="Category"><span class="mat-chip mat-fruits">Fruits</span></td><td data-label="Total" class="strong">$34.80</td><td data-label="Points" class="pts">+35</td></tr>
+                <tr><td data-label="Order" class="strong">#GR-1039</td><td data-label="Date">03 Oct 2026</td><td data-label="Category"><span class="mat-chip mat-dairy">Dairy</span></td><td data-label="Total" class="strong">$28.40</td><td data-label="Points" class="pts">+28</td></tr>
+                <tr><td data-label="Order" class="strong">#GR-1038</td><td data-label="Date">28 Sep 2026</td><td data-label="Category"><span class="mat-chip mat-bakery">Bakery</span></td><td data-label="Total" class="strong">$22.10</td><td data-label="Points" class="pts">+22</td></tr>
+                <tr><td data-label="Order" class="strong">#GR-1037</td><td data-label="Date">22 Sep 2026</td><td data-label="Category"><span class="mat-chip mat-meat">Meat</span></td><td data-label="Total" class="strong">$54.60</td><td data-label="Points" class="pts">+55</td></tr>
+                <tr><td data-label="Order" class="strong">#GR-1036</td><td data-label="Date">15 Sep 2026</td><td data-label="Category"><span class="mat-chip mat-beverage">Beverages</span></td><td data-label="Total" class="strong">$31.90</td><td data-label="Points" class="pts">+32</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ WISHLIST ============ -->
+      <div id="section-wishlist" class="content-section">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-heart"></i> My Wishlist</div>
+          <div class="wishlist-grid">
+            <div class="wish-card">
+              <div class="w-icon"><i class="fa-solid fa-jar"></i></div>
+              <div class="w-title">Organic Honey</div>
+              <div class="w-price">$12.99</div>
+              <a href="404.html" class="w-btn">Add to Cart</a>
+            </div>
+            <div class="wish-card">
+              <div class="w-icon"><i class="fa-solid fa-cow"></i></div>
+              <div class="w-title">Greek Yogurt</div>
+              <div class="w-price">$6.49</div>
+              <a href="404.html" class="w-btn">Add to Cart</a>
+            </div>
+            <div class="wish-card">
+              <div class="w-icon"><i class="fa-solid fa-bottle-water"></i></div>
+              <div class="w-title">Almond Milk</div>
+              <div class="w-price">$4.99</div>
+              <a href="404.html" class="w-btn">Add to Cart</a>
+            </div>
+            <div class="wish-card">
+              <div class="w-icon"><i class="fa-solid fa-bread-slice"></i></div>
+              <div class="w-title">Sourdough Bread</div>
+              <div class="w-price">$5.49</div>
+              <a href="404.html" class="w-btn">Add to Cart</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ REWARDS ============ -->
+      <div id="section-rewards" class="content-section">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-gift"></i> Rewards & Loyalty Points</div>
+
+          <div class="rewards-balance">
+            <div class="label">Available Balance</div>
+            <div class="amount">1,240 <small>pts</small></div>
+            <div class="sub">Equivalent to $12.40 in grocery vouchers</div>
+          </div>
+
+          <div class="rewards-grid">
+            <div class="reward-card">
+              <div class="r-icon"><i class="fa-solid fa-truck-fast"></i></div>
+              <div class="r-title">Free Delivery</div>
+              <div class="r-pts">500 pts</div>
+              <a href="404.html" class="r-btn">Redeem</a>
+            </div>
+            <div class="reward-card">
+              <div class="r-icon"><i class="fa-solid fa-tag"></i></div>
+              <div class="r-title">$5 Off Coupon</div>
+              <div class="r-pts">800 pts</div>
+              <a href="404.html" class="r-btn">Redeem</a>
+            </div>
+            <div class="reward-card">
+              <div class="r-icon"><i class="fa-solid fa-crown"></i></div>
+              <div class="r-title">Premium Membership</div>
+              <div class="r-pts">1,200 pts</div>
+              <a href="404.html" class="r-btn">Redeem</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const session = window.__GROCERY_USER__;
+  if (session && session.name) {
+    const name = session.name;
+    const initial = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('headerUserName', name);
+    set('avatarInitials', initial);
+    set('sidebarUserName', name);
+    set('pageSubtitle', 'Welcome back, ' + name.split(' ')[0] + '. Fresh deals await!');
+    set('pageSubtitleMobile', 'Welcome back, ' + name.split(' ')[0] + '. Fresh deals await!');
+  }
+
+  const titles = {
+    dashboard: ['Customer Dashboard', 'Track your orders and savings.'],
+    orders:    ['My Orders', 'View current and upcoming deliveries.'],
+    history:   ['Order History', 'Every purchase you have made, in one place.'],
+    wishlist:  ['Wishlist', 'Your saved products, ready to add to cart.'],
+    rewards:   ['Rewards', 'Redeem your loyalty points for grocery perks.']
+  };
+
+  function navigateTo(page) {
+    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('section-' + page);
+    if (target) target.classList.add('active');
+
+    if (titles[page]) {
+      document.getElementById('pageTitle').textContent = titles[page][0];
+      document.getElementById('pageSubtitle').textContent = titles[page][1];
+      document.getElementById('pageTitleMobile').textContent = titles[page][0];
+      document.getElementById('pageSubtitleMobile').textContent = titles[page][1];
+    }
+
+    document.querySelectorAll('.sidebar .nav-link[data-page]').forEach(l => {
+      l.classList.toggle('active', l.dataset.page === page);
+    });
+    document.querySelectorAll('.mobile-nav .nav-btn[data-page]').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === page);
+    });
+
+    document.querySelector('.dash-body').scrollTop = 0;
+  }
+
+  document.querySelectorAll('.sidebar .nav-link[data-page]').forEach(l => {
+    l.addEventListener('click', e => { e.preventDefault(); navigateTo(l.dataset.page); });
+  });
+  document.querySelectorAll('.mobile-nav .nav-btn[data-page]').forEach(b => {
+    b.addEventListener('click', e => { e.preventDefault(); navigateTo(b.dataset.page); });
+  });
+
+  const datePill = document.getElementById('datePill');
+  if (datePill) {
+    datePill.addEventListener('click', () => {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const t = new Date();
+      document.getElementById('dateText').textContent = 'Today, ' + t.getDate() + ' ' + months[t.getMonth()] + ' ' + t.getFullYear();
+    });
+  }
+
+  const bell = document.getElementById('bellBtn');
+  const notifDrop = document.getElementById('notifDropdown');
+  if (bell && notifDrop) {
+    bell.addEventListener('click', e => {
+      e.stopPropagation();
+      notifDrop.classList.toggle('show');
+      document.getElementById('profileMenu').classList.remove('show');
+    });
+    document.addEventListener('click', e => {
+      if (!notifDrop.contains(e.target) && !bell.contains(e.target)) notifDrop.classList.remove('show');
+    });
+  }
+
+  const profBtn = document.getElementById('profileBtn');
+  const profMenu = document.getElementById('profileMenu');
+  if (profBtn && profMenu) {
+    profBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      profMenu.classList.toggle('show');
+      notifDrop.classList.remove('show');
+    });
+    document.addEventListener('click', e => {
+      if (!profMenu.contains(e.target) && !profBtn.contains(e.target)) profMenu.classList.remove('show');
+    });
+  }
+})();
+
+function handleLogout(e) {
+  if (e) e.preventDefault();
+  try {
+    sessionStorage.removeItem('grocery_session');
+    localStorage.removeItem('grocery_session');
+  } catch (_) {}
+  window.location.replace('login.html');
+}
+
+window.addEventListener('load', function () {
+  const c = { primary: '#2E7D32', accent: '#43A047', accentD: '#FF9800' };
+
+  const mEl = document.getElementById('monthlyChart');
+  if (mEl) new Chart(mEl, {
+    type: 'line',
+    data: {
+      labels: ['May','Jun','Jul','Aug','Sep','Oct'],
+      datasets: [{
+        data: [280, 320, 298, 342, 315, 342],
+        borderColor: c.accentD,
+        backgroundColor: 'rgba(255,152,0,0.18)',
+        tension: 0.4, borderWidth: 2.5, pointRadius: 3,
+        pointBackgroundColor: c.accentD, fill: true
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#E8F5E9' }, ticks: { font: { size: 9 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+      }
+    }
+  });
+
+  const matEl = document.getElementById('materialChart');
+  if (matEl) new Chart(matEl, {
+    type: 'doughnut',
+    data: {
+      labels: ['Fruits','Veggies','Dairy','Bakery','Meat','Beverages'],
+      datasets: [{
+        data: [98, 142, 76, 52, 84, 68],
+        backgroundColor: ['#FF9800','#4CAF50','#FFC107','#8D6E63','#E53935','#26A69A'],
+        borderWidth: 2, borderColor: '#fff', hoverOffset: 5
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 9 } } } },
+      cutout: '62%'
+    }
+  });
+
+  const co2El = document.getElementById('co2Chart');
+  if (co2El) new Chart(co2El, {
+    type: 'bar',
+    data: {
+      labels: ['W1','W2','W3','W4','W5','W6'],
+      datasets: [{
+        data: [3, 4, 3, 5, 4, 5],
+        backgroundColor: c.accentD,
+        borderRadius: 6,
+        barThickness: 16
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#E8F5E9' }, ticks: { font: { size: 9 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+      }
+    }
+  });
+});
+
+window.addEventListener('pageshow', function (e) {
+  if (!e.persisted) return;
+  console.log('[BFCACHE] Page restored — re-validating session...');
+  const raw = sessionStorage.getItem('grocery_session') || localStorage.getItem('grocery_session');
+  const s = raw ? JSON.parse(raw) : null;
+  const valid = s && s.authenticated === true && s.expiresAt > Date.now() && s.role === 'customer';
+  if (!valid) {
+    console.log('%c[BFCACHE] ❌ Session invalid — redirecting', 'color:#dc2626;font-weight:bold');
+    window.location.replace('login.html');
+  } else {
+    console.log('%c[BFCACHE] ✅ Session still valid', 'color:#16a34a;font-weight:bold');
+  }
+});
+</script>
+
+</body>
+</html>
